@@ -1,8 +1,11 @@
 import logging
+import yaml
 
 from aiogram import Bot, Dispatcher, executor, types
 
-API_TOKEN = ''
+config = yaml.safe_load(open("config.yml"))
+
+API_TOKEN = config['TOKEN']
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -10,7 +13,6 @@ logging.basicConfig(level=logging.INFO)
 # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
-print("start")
 
 
 @dp.message_handler(commands=['start', 'help'])
