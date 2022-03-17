@@ -21,7 +21,11 @@ metadata = db.MetaData()
 users = db.Table('users', metadata, autoload=True, autoload_with=engine)
 
 
-@dp.message_handler(commands=['start', 'help'])
+@dp.message_handler(commands=['help'])
+async def send_help(message: types.Message):
+    await message.reply("Полковнику никто... Не пишет\nПолковника никто... не ждёёт...")
+
+@dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     user = connection.execute(db.select([users]).where(users.columns.tid == message.from_user.id)).fetchall()
 
