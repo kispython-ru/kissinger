@@ -8,5 +8,5 @@ class User(Base):
     __tablename__ = "users"
     uid = Column(Integer, primary_key=True)
     tid = Column(Integer)
-    gid = Column(Integer)
-    vid = Column(Integer)
+    gid = Column(Integer, nullable=True)
+    vid = Column(Integer, nullable=True)
