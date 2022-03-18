@@ -14,12 +14,12 @@
 import requests
 from aiogram import types
 
-from main import bot
+from main import bot, config
 
 
 # Send message with variant list
 async def select_variant(tid, mid=0):
-    r = requests.get('http://kispython.ru/api/v1/variant/list')
+    r = requests.get(config['URL'] + 'variant/list')
     keyboard = types.InlineKeyboardMarkup(3)
     for variant in r.json():
         keyboard.add(
@@ -34,7 +34,7 @@ async def select_variant(tid, mid=0):
 
 # Send message with group list
 async def select_group(tid, prefix, mid=0):
-    r = requests.get('http://kispython.ru/api/v1/group/' + prefix)
+    r = requests.get(config['URL'] + 'group/' + prefix)
     keyboard = types.InlineKeyboardMarkup()
     for group in r.json():
         keyboard.add(
@@ -48,7 +48,7 @@ async def select_group(tid, prefix, mid=0):
 
 # Send message with prefix list
 async def select_prefix(tid, mid=0):
-    r = requests.get('http://kispython.ru/api/v1/group/prefixes')
+    r = requests.get(config['URL'] + 'group/prefixes')
     keyboard = types.InlineKeyboardMarkup()
     for prefix in r.json()["prefixes"]:
         keyboard.add(types.InlineKeyboardButton(text=prefix, callback_data=("grouponboard_" + prefix)))
