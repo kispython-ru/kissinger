@@ -1,25 +1,22 @@
 import logging
-import yaml
-import requests
 import sqlalchemy as db
 
-from aiogram import Bot, Dispatcher, executor, types
+from aiogram import Dispatcher, executor, types
 
 # Load config file
 from sqlalchemy.orm import Session
 
 import dbmanager
+import messenger
 import onboarding
 from models import User
 
-config = yaml.safe_load(open("config.yml"))
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
 # Initialize bot and dispatcher
-bot = Bot(token=config['TOKEN'])
-dp = Dispatcher(bot)
+dp = Dispatcher(messenger.bot)
 
 # Initialize database
 engine = db.create_engine('sqlite:///kissinger.sqlite')
@@ -77,10 +74,7 @@ async def callback_handler(callback: types.CallbackQuery):
 
 
 async def dashboard(tid, mid=0):
-    if mid != 0:
-        await bot.edit_message_text(chat_id=tid, message_id=mid, text="Welcome onboard")
-    else:
-        await bot.send_message(chat_id=tid, text="Welcome onboard")
+    await messenger.edit_or_send(tid, "Welcome onboard!", mid=mid)
 
 
 if __name__ == '__main__':

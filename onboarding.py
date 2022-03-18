@@ -12,9 +12,12 @@
 #
 
 import requests
+import yaml
 from aiogram import types
 
-from main import bot, config
+import messenger
+
+config = yaml.safe_load(open("config.yml"))
 
 
 # Send message with variant list
@@ -26,10 +29,7 @@ async def select_variant(tid, mid=0):
             types.InlineKeyboardButton(text=variant+1, callback_data="variantselected_" + str(variant))
         )
     keyboard.add(types.InlineKeyboardButton(text="<--", callback_data="variantonboard"))
-    if mid != 0:
-        await bot.edit_message_text(chat_id=tid, message_id=mid, reply_markup=keyboard, text="Select your variant")
-    else:
-        await bot.send_message(chat_id=tid, reply_markup=keyboard, text="Select your variant")
+    await messenger.edit_or_send(tid, "Select your variant", keyboard, mid)
 
 
 # Send message with group list
@@ -40,10 +40,7 @@ async def select_group(tid, prefix, mid=0):
         keyboard.add(
             types.InlineKeyboardButton(text=group["title"], callback_data="variantonboard_" + str(group["id"])))
     keyboard.add(types.InlineKeyboardButton(text="<--", callback_data="prefixonboard"))
-    if mid != 0:
-        await bot.edit_message_text(chat_id=tid, message_id=mid, reply_markup=keyboard, text="Select your group")
-    else:
-        await bot.send_message(chat_id=tid, reply_markup=keyboard, text="Select your group")
+    await messenger.edit_or_send(tid, "Select your group", keyboard, mid)
 
 
 # Send message with prefix list
@@ -52,8 +49,4 @@ async def select_prefix(tid, mid=0):
     keyboard = types.InlineKeyboardMarkup()
     for prefix in r.json()["prefixes"]:
         keyboard.add(types.InlineKeyboardButton(text=prefix, callback_data=("grouponboard_" + prefix)))
-
-    if mid is not 0:
-        await bot.edit_message_text(chat_id=tid, message_id=mid, reply_markup=keyboard, text="Select your prefix")
-    else:
-        await bot.send_message(chat_id=tid, reply_markup=keyboard, text="Select your prefix")
+    await messenger.edit_or_send(tid, "Select your prefix", keyboard, mid)
