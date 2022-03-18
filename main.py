@@ -36,6 +36,9 @@ async def send_welcome(message: types.Message):
     if user is None:
         await register_and_onboard(message.from_user.id)
         return
+    if user.gid is None or user.vid is None:
+        await onboarding.select_prefix(message.from_user.id)
+        return
 
     await dashboard(message.from_user.id)
 
