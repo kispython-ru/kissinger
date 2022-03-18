@@ -10,6 +10,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.orm import sessionmaker
 
+import dbmanager
 from models import User
 
 config = yaml.safe_load(open("config.yml"))
@@ -27,11 +28,6 @@ engine = db.create_engine('sqlite:///kissinger.sqlite')
 # metadata = db.MetaData()
 # users = db.Table('users', metadata, autoload=True, autoload_with=engine)
 session = Session(bind=engine)
-
-
-
-
-
 
 
 @dp.message_handler(commands=['help'], commands_prefix='!/')
@@ -71,11 +67,11 @@ async def callback_handler(callback: types.CallbackQuery):
             return
         if action == "variantonboard":
             if len(payload) > 1:
-                await record_group_id(session, user, payload[1])
+                await dbmanager.record_gid(session, user, payload[1])
             await onboard_select_variant(callback.from_user.id, callback.message.message_id)
         if action == "variantselected":
             if len(payload) > 1:
-                await record_group_id(session, user, payload[1])
+                await dbmanager.record_vid(session, user, payload[1])
             await dashboard(callback.from_user.id, callback.message.message_id)
     return
 
@@ -86,15 +82,7 @@ async def dashboard(tid, mid=0):
     else:
         await bot.send_message(chat_id=tid, text="Welcome onboard")
 
-async def record_group_id(session, user, gid):
-    user.gid = int(gid)
-    session.commit()
 
-
-async def record_variant_id(session, user, vid):
-    user.vid = int(vid)
-    session.commit()
-    return
 
 
 # http://kispython.ru/api/v1/variant/list
