@@ -28,3 +28,7 @@ async def edit_or_send(tid, text, keyboard=None, mid=0):
         await bot.edit_message_text(chat_id=tid, message_id=mid, reply_markup=keyboard, text=text)
     else:
         await bot.send_message(chat_id=tid, reply_markup=keyboard, text=text)
+
+
+async def popup_error(callid, text):
+    await bot.answer_callback_query(callid, text)

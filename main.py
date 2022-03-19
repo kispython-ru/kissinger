@@ -90,7 +90,7 @@ async def callback_handler(callback: types.CallbackQuery):
                 await dbmanager.record_vid(session, user, payload[1])
             await dashboard(user, callback.message.message_id)
         case "task":
-            await open_task(user, payload[1], callback.message.message_id)
+            await open_task(user, payload[1], callback.message.message_id, callback.id)
         case "dashboard":
             await dashboard(user, callback.message.message_id)
         case _:
@@ -132,41 +132,45 @@ async def register_and_onboard(tid):
     await onboarding.select_prefix(tid)
 
 
-async def open_task(user, taskid, mid=0):
+async def open_task(user, taskid, mid=0, callid=0):
     # TODO: on all requests check status code
     r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + taskid)
+    try:
+        answer = "Задание " + str(int(taskid) + 1) + "\n"
 
-    answer = "Задание " + str(int(taskid)+1) + "\n"
+        match r.json()['status']:
+            case 0:
+                answer += '⏳ '
+            case 1:
+                answer += '🏃‍♂️💨 '
+            case 2:
+                answer += '✔️ '
+            case 3:
+                answer += '❌ '
+            case 4:
+                answer += '⚪ '
 
-    match r.json()['status']:
-        case 0:
-            answer += '⏳ '
-        case 1:
-            answer += '🏃‍♂️💨 '
-        case 2:
-            answer += '✔️ '
-        case 3:
-            answer += '❌ '
-        case 4:
-            answer += '⚪ '
+        answer += r.json()["status_name"] + "\n\n"
 
-    answer += r.json()["status_name"] + "\n\n"
+        # TODO: Parse target and paste here
+        answer += "Ссылка на задание: " + r.json()["source"] + "\n\n"
 
-    # TODO: Parse target and paste here
-    answer += "Ссылка на задание: " + r.json()["source"] + "\n\n"
-
-    answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
-    keyboard = types.InlineKeyboardMarkup()
-    if r.json()["status"] == 0 or r.json()["status"] == 1:
+        answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
+        keyboard = types.InlineKeyboardMarkup()
+        if r.json()["status"] == 0 or r.json()["status"] == 1:
+            keyboard.add(
+                types.InlineKeyboardButton(text="Обновить", callback_data="task_" + taskid)
+            )
         keyboard.add(
-            types.InlineKeyboardButton(text="Обновить", callback_data="task_" + taskid)
+            types.InlineKeyboardButton(text="<--", callback_data="dashboard")
         )
-    keyboard.add(
-        types.InlineKeyboardButton(text="<--", callback_data="dashboard")
-    )
-    await messenger.edit_or_send(user.tid, answer, keyboard, mid)
-    user.last_task = taskid
-    session.commit()
+        await messenger.edit_or_send(user.tid, answer, keyboard, mid)
+        user.last_task = taskid
+        session.commit()
+    except:
+        # TODO: Костыльно как-то, переделай
+        await messenger.popup_error(callid, "⛔ Не удалось выполнить запрос")
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
