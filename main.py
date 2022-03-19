@@ -157,6 +157,10 @@ async def open_task(user, taskid, mid=0):
 
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
     keyboard = types.InlineKeyboardMarkup()
+    if r.json()["status"] == 0 or r.json()["status"] == 1:
+        keyboard.add(
+            types.InlineKeyboardButton(text="Обновить", callback_data="task_" + taskid)
+        )
     keyboard.add(
         types.InlineKeyboardButton(text="<--", callback_data="dashboard")
     )
