@@ -28,6 +28,11 @@ session = Session(bind=engine)
 config = yaml.safe_load(open("config.yml"))
 
 
+@dp.message_handler(commands=['task'], commands_prefix='!/')
+async def send_help(message: types.Message):
+    await message.reply("Полковнику никто... Не пишет\nПолковника никто... не ждёёт...")
+
+
 @dp.message_handler(commands=['help'], commands_prefix='!/')
 async def send_help(message: types.Message):
     await message.reply("Полковнику никто... Не пишет\nПолковника никто... не ждёёт...")
@@ -79,6 +84,10 @@ async def callback_handler(callback: types.CallbackQuery):
             if len(payload) > 1:
                 await dbmanager.record_vid(session, user, payload[1])
             await dashboard(user, callback.message.message_id)
+        case "task":
+            await open_task(callback.from_user.id, user.gid, user.vid, payload[1], callback.message.message_id)
+        case "dashboard":
+            await dashboard(user, callback.message.message_id)
         case _:
             print("No case founded for ", payload[0])
     return
@@ -86,8 +95,11 @@ async def callback_handler(callback: types.CallbackQuery):
 
 async def dashboard(user, mid=0):
     r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/list')
-    answer = "👨‍🏫 Ваши успехи в обучении: \n\n"
+    keyboard = types.InlineKeyboardMarkup()
+    # answer = "👨‍🏫 Ваши успехи в обучении: \n\n"
+    answer = ""
     for task in r.json():
+        answer = ""
         match task['status']:
             case 0:
                 answer += '⏳ '
@@ -99,8 +111,12 @@ async def dashboard(user, mid=0):
                 answer += '❌ '
             case 4:
                 answer += '⚪ '
-        answer += "Задание " + str(task['id']+1) + ": " + task['status_name'] + "\nПосмотреть: /task_" + str(task['id']+1) + "\n\n"
-    await messenger.edit_or_send(user.tid, answer, mid=mid)
+        # answer += "Задание " + str(task['id']+1) + ": " + task['status_name'] + "\nПосмотреть: /task_" + str(task['id']+1) + "\n\n"
+        answer += "Задание " + str(task['id'] + 1) + ": " + task['status_name']
+        keyboard.add(
+            types.InlineKeyboardButton(text=answer, callback_data="task_" + str(task['id']))
+        )
+    await messenger.edit_or_send(user.tid, "👨‍🏫 Ваши успехи в обучении:", keyboard, mid)
 
 
 async def register_and_onboard(tid):
@@ -110,6 +126,36 @@ async def register_and_onboard(tid):
     session.commit()
     await onboarding.select_prefix(tid)
 
+
+async def open_task(tid, gid, vid, taskid, mid=0):
+    # TODO: on all requests check status code
+    r = requests.get(config['URL'] + 'group/' + str(gid) + '/variant/' + str(vid) + '/task/' + taskid)
+
+    answer = "Задание " + str(int(taskid)+1) + "\n"
+
+    match r.json()['status']:
+        case 0:
+            answer += '⏳ '
+        case 1:
+            answer += '🏃‍♂️💨 '
+        case 2:
+            answer += '✔️ '
+        case 3:
+            answer += '❌ '
+        case 4:
+            answer += '⚪ '
+
+    answer += r.json()["status_name"] + "\n\n"
+
+    # TODO: Parse target and paste here
+    answer += "Ссылка на задание: " + r.json()["source"] + "\n\n"
+
+    answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(
+        types.InlineKeyboardButton(text="<--", callback_data="dashboard")
+    )
+    await messenger.edit_or_send(tid, answer, keyboard, mid)
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
