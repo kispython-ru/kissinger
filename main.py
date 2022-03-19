@@ -90,22 +90,19 @@ async def tasks_acceptor(message: types.Message):
         await onboarding.select_prefix(message.from_user.id)
         return
 
-  #  headers = {'User-Agent': 'Kissinger/1.0'}
-   # payload = {'code': message.text.encode('utf-8'), 'csrf_token': user.lt_token}
     # TODO: Договориcь о нормальном API, ну что это за ёбань с плясками?
-    browser = RoboBrowser(history=True)
+    browser = RoboBrowser(user_agent='Kissinger/1.0')
     browser.open("http://kispython.ru" + '/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task))
 
     form = browser.get_form(action='/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task))
     form  # <RoboForm q=>
     form['code'].value = message #.text.encode('utf-8')
     browser.submit_form(form)
-    r = requests.post("http://kispython.ru/" + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task), headers=headers,data=payload)
 
-    print(browser.select("card-subtitle"))
+    print(browser.select("h6.card-subtitle"))
     print(browser.response)
-    #print(str(r.status_code) + ': ' + str(r.content))
     await open_task(user, user.last_task)
+    # Нет, я не могу просто отправить POST. В форме нужно передавать не только code, но и csrf token, который где-то нужно взять
 
 
 #
@@ -182,12 +179,27 @@ async def register_and_onboard(tid):
 
 
 async def open_task(user, taskid, mid=0, callid=0):
-    # TODO: on all requests check status code
-    r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(taskid))
-    try:
-        answer = "Задание " + str(int(taskid) + 1) + "\n"
+    # answer string
+    answer = "Задание " + str(int(taskid) + 1) + "\n"
 
-        match r.json()['status']:
+    #
+    # There are problem: direct request returns 500 sometimes
+    # Так что обходим
+    req = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/list')
+    r = req.json()[int(taskid)]
+
+    # Parse
+   # browser = RoboBrowser()
+   # browser.open("http://kispython.ru" + '/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(taskid))
+   # print(browser.response)
+   # btn = browser.select("a.btn-primary")[0]
+   # href = btn['href']
+    href = r['source']
+
+
+    try:
+        #r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(taskid))
+        match r['status']:
             case 0:
                 answer += '⏳ '
             case 1:
@@ -199,33 +211,26 @@ async def open_task(user, taskid, mid=0, callid=0):
             case 4:
                 answer += '⚪ '
 
-        answer += r.json()["status_name"] + "\n\n"
-
-        # TODO: Parse target and paste here
-        answer += "Ссылка на задание: " + r.json()["source"] + "\n\n"
-
-        answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
-        keyboard = types.InlineKeyboardMarkup()
-        if r.json()["status"] == 0 or r.json()["status"] == 1:
-            keyboard.add(
-                types.InlineKeyboardButton(text="Обновить", callback_data="task_" + taskid)
-            )
-        keyboard.add(
-            types.InlineKeyboardButton(text="<--", callback_data="dashboard")
-        )
-        await messenger.edit_or_send(user.tid, answer, keyboard, mid)
-
-
-
-        # r = requests.get("http://kispython.ru" + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + taskid)
-
+        answer += r["status_name"] + "\n\n"
     except:
         # TODO: Костыльно как-то, переделай
         await messenger.popup_error(callid, "⛔ Не удалось выполнить запрос")
 
+    answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(
+        types.InlineKeyboardButton(text="Обновить", callback_data="task_" + str(taskid))
+    )
+    keyboard.add(
+        types.InlineKeyboardButton(text="<--", callback_data="dashboard")
+    )
+    await messenger.edit_or_send(user.tid, answer, keyboard, mid)
 
-        user.last_task = taskid
+    user.last_task = taskid
     session.commit()
+
+    # TODO: Parse target and paste here
+    answer += "Ссылка на задание: " + href + "\n\n"
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
