@@ -11,4 +11,3 @@ class User(Base):
     gid = Column(Integer, nullable=True)
     vid = Column(Integer, nullable=True)
     last_task = Column(Integer, nullable=True)
-    lt_token = Column(String, nullable= True)
