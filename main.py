@@ -35,7 +35,7 @@ async def send_help(message: types.Message, regexp_command):
     if user.gid is None or user.vid is None:
         await onboarding.select_prefix(message.from_user.id)
         return
-    await open_task(user.tid, user.gid, user.vid, str(int(regexp_command.group(1)) - 1))
+    await open_task(user, str(int(regexp_command.group(1)) - 1))
 
 
 @dp.message_handler(commands=['help'], commands_prefix='!/')
@@ -90,7 +90,7 @@ async def callback_handler(callback: types.CallbackQuery):
                 await dbmanager.record_vid(session, user, payload[1])
             await dashboard(user, callback.message.message_id)
         case "task":
-            await open_task(callback.from_user.id, user.gid, user.vid, payload[1], callback.message.message_id)
+            await open_task(user, payload[1], callback.message.message_id)
         case "dashboard":
             await dashboard(user, callback.message.message_id)
         case _:
@@ -132,9 +132,9 @@ async def register_and_onboard(tid):
     await onboarding.select_prefix(tid)
 
 
-async def open_task(tid, gid, vid, taskid, mid=0):
+async def open_task(user, taskid, mid=0):
     # TODO: on all requests check status code
-    r = requests.get(config['URL'] + 'group/' + str(gid) + '/variant/' + str(vid) + '/task/' + taskid)
+    r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + taskid)
 
     answer = "Задание " + str(int(taskid)+1) + "\n"
 
@@ -160,7 +160,9 @@ async def open_task(tid, gid, vid, taskid, mid=0):
     keyboard.add(
         types.InlineKeyboardButton(text="<--", callback_data="dashboard")
     )
-    await messenger.edit_or_send(tid, answer, keyboard, mid)
+    await messenger.edit_or_send(user.tid, answer, keyboard, mid)
+    user.last_task = taskid
+    session.commit()
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

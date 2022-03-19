@@ -10,3 +10,4 @@ class User(Base):
     tid = Column(Integer)
     gid = Column(Integer, nullable=True)
     vid = Column(Integer, nullable=True)
+    last_task = Column(Integer, nullable=True)
