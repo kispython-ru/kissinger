@@ -43,6 +43,20 @@ async def send_help(message: types.Message):
     await message.reply("Полковнику никто... Не пишет\nПолковника никто... не ждёёт...")
 
 
+@dp.message_handler(commands=['reset'], commands_prefix='!/')
+async def send_help(message: types.Message):
+    user = session.query(User).filter_by(tid=message.from_user.id).first()
+
+    user.vid = None
+    user.gid = None
+    user.last_task = None
+    session.commit()
+
+    await message.reply("✅ Настройки сброшены!")
+
+    await onboarding.select_prefix(user.tid)
+
+
 @dp.message_handler(commands=['start'], commands_prefix='!/')
 async def send_welcome(message: types.Message):
     # Get user info from db
