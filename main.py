@@ -9,8 +9,9 @@ from aiogram import Dispatcher, executor, types
 from aiogram.dispatcher import filters
 from sqlalchemy.orm import Session
 
-import re
 import werkzeug
+
+# Так надо
 werkzeug.cached_property = werkzeug.utils.cached_property
 from robobrowser import RoboBrowser
 
@@ -35,10 +36,12 @@ config = yaml.safe_load(open("config.yml"))
 
 @dp.message_handler((filters.RegexpCommandsFilter(regexp_commands=['task_([0-9]*)'])))
 async def send_help(message: types.Message, regexp_command):
+    # TODO: User registration must be centralized
     user = session.query(User).filter_by(tid=message.from_user.id).first()
     if user.gid is None or user.vid is None:
         await onboarding.select_prefix(message.from_user.id)
         return
+
     await open_task(user, str(int(regexp_command.group(1)) - 1))
 
 
@@ -91,16 +94,20 @@ async def tasks_acceptor(message: types.Message):
         return
 
     # TODO: Договориcь о нормальном API, ну что это за ёбань с плясками?
-    browser = RoboBrowser(user_agent='Kissinger/1.0')
-    browser.open("http://kispython.ru" + '/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task))
 
+    # Create headless browser
+    browser = RoboBrowser(user_agent='Kissinger/1.0')
+
+    # Open DTA and insert code to form
+    browser.open("http://kispython.ru" + '/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task))
     form = browser.get_form(action='/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task))
     form  # <RoboForm q=>
-    form['code'].value = message #.text.encode('utf-8')
+    form['code'].value = message  # .text.encode('utf-8')
     browser.submit_form(form)
 
-    print(browser.select("h6.card-subtitle"))
-    print(browser.response)
+    # TODO: check is request successful
+
+    # Redirect to task viewer
     await open_task(user, user.last_task)
     # Нет, я не могу просто отправить POST. В форме нужно передавать не только code, но и csrf token, который где-то нужно взять
 
@@ -147,8 +154,6 @@ async def callback_handler(callback: types.CallbackQuery):
 async def dashboard(user, mid=0):
     r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/list')
     keyboard = types.InlineKeyboardMarkup()
-    # answer = "👨‍🏫 Ваши успехи в обучении: \n\n"
-    answer = ""
     for task in r.json():
         answer = ""
         match task['status']:
@@ -162,7 +167,6 @@ async def dashboard(user, mid=0):
                 answer += '❌ '
             case 4:
                 answer += '⚪ '
-        # answer += "Задание " + str(task['id']+1) + ": " + task['status_name'] + "\nПосмотреть: /task_" + str(task['id']+1) + "\n\n"
         answer += "Задание " + str(task['id'] + 1) + ": " + task['status_name']
         keyboard.add(
             types.InlineKeyboardButton(text=answer, callback_data="task_" + str(task['id']))
@@ -178,27 +182,24 @@ async def register_and_onboard(tid):
     await onboarding.select_prefix(tid)
 
 
+# TODO: onerror show it's reason (is not implemented in api, mb i should parse webbage again
 async def open_task(user, taskid, mid=0, callid=0):
     # answer string
     answer = "Задание " + str(int(taskid) + 1) + "\n"
 
     #
     # There are problem: direct request returns 500 sometimes
-    # Так что обходим
+    # So first of all:
+    # TODO: Resolve promlem with official api
+    # Second one:
+    # For now we will make LIST request and take necessary task by it's id
+
     req = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/list')
     r = req.json()[int(taskid)]
 
-    # Parse
-   # browser = RoboBrowser()
-   # browser.open("http://kispython.ru" + '/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(taskid))
-   # print(browser.response)
-   # btn = browser.select("a.btn-primary")[0]
-   # href = btn['href']
     href = r['source']
 
-
     try:
-        #r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(taskid))
         match r['status']:
             case 0:
                 answer += '⏳ '
@@ -216,8 +217,13 @@ async def open_task(user, taskid, mid=0, callid=0):
         # TODO: Костыльно как-то, переделай
         await messenger.popup_error(callid, "⛔ Не удалось выполнить запрос")
 
+    # TODO: Fix bug where ios client can't open this link
+    # TODO: Smart webpage parsing
+    answer += "Ссылка на задание:  " + href + "\n\n"
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
     keyboard = types.InlineKeyboardMarkup()
+    # TODO: Autoupdate
+    # TODO: Show button only for tasks in processing
     keyboard.add(
         types.InlineKeyboardButton(text="Обновить", callback_data="task_" + str(taskid))
     )
@@ -229,8 +235,6 @@ async def open_task(user, taskid, mid=0, callid=0):
     user.last_task = taskid
     session.commit()
 
-    # TODO: Parse target and paste here
-    answer += "Ссылка на задание: " + href + "\n\n"
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
