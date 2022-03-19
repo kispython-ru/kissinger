@@ -7,6 +7,7 @@ import yaml
 from aiogram import Dispatcher, executor, types
 
 # Load config file
+from aiogram.dispatcher import filters
 from sqlalchemy.orm import Session
 
 import dbmanager
@@ -28,9 +29,13 @@ session = Session(bind=engine)
 config = yaml.safe_load(open("config.yml"))
 
 
-@dp.message_handler(commands=['task'], commands_prefix='!/')
-async def send_help(message: types.Message):
-    await message.reply("Полковнику никто... Не пишет\nПолковника никто... не ждёёт...")
+@dp.message_handler((filters.RegexpCommandsFilter(regexp_commands=['task_([0-9]*)'])))
+async def send_help(message: types.Message, regexp_command):
+    user = session.query(User).filter_by(tid=message.from_user.id).first()
+    if user.gid is None or user.vid is None:
+        await onboarding.select_prefix(message.from_user.id)
+        return
+    await open_task(user.tid, user.gid, user.vid, str(int(regexp_command.group(1)) - 1))
 
 
 @dp.message_handler(commands=['help'], commands_prefix='!/')
