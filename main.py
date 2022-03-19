@@ -1,5 +1,8 @@
 import logging
+
+import requests
 import sqlalchemy as db
+import yaml
 
 from aiogram import Dispatcher, executor, types
 
@@ -21,6 +24,9 @@ dp = Dispatcher(messenger.bot)
 engine = db.create_engine('sqlite:///kissinger.sqlite')
 session = Session(bind=engine)
 
+# TODO: Config initialization must be centralised. And config path put to .env
+config = yaml.safe_load(open("config.yml"))
+
 
 @dp.message_handler(commands=['help'], commands_prefix='!/')
 async def send_help(message: types.Message):
@@ -40,7 +46,7 @@ async def send_welcome(message: types.Message):
         await onboarding.select_prefix(message.from_user.id)
         return
 
-    await dashboard(message.from_user.id)
+    await dashboard(user)
 
 
 #
@@ -72,14 +78,29 @@ async def callback_handler(callback: types.CallbackQuery):
         case "variantselected":
             if len(payload) > 1:
                 await dbmanager.record_vid(session, user, payload[1])
-            await dashboard(callback.from_user.id, callback.message.message_id)
+            await dashboard(user, callback.message.message_id)
         case _:
             print("No case founded for ", payload[0])
     return
 
 
-async def dashboard(tid, mid=0):
-    await messenger.edit_or_send(tid, "Welcome onboard!", mid=mid)
+async def dashboard(user, mid=0):
+    r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/list')
+    answer = "👨‍🏫 Ваши успехи в обучении: \n\n"
+    for task in r.json():
+        match task['status']:
+            case 0:
+                answer += '⏳ '
+            case 1:
+                answer += '🏃‍♂️💨 '
+            case 2:
+                answer += '✔️ '
+            case 3:
+                answer += '❌ '
+            case 4:
+                answer += '⚪ '
+        answer += "Задание " + str(task['id']+1) + ": " + task['status_name'] + "\nПосмотреть: /task_" + str(task['id']+1) + "\n\n"
+    await messenger.edit_or_send(user.tid, answer, mid=mid)
 
 
 async def register_and_onboard(tid):
