@@ -6,9 +6,13 @@ import yaml
 
 from aiogram import Dispatcher, executor, types
 
-# Load config file
 from aiogram.dispatcher import filters
 from sqlalchemy.orm import Session
+
+import re
+import werkzeug
+werkzeug.cached_property = werkzeug.utils.cached_property
+from robobrowser import RoboBrowser
 
 import dbmanager
 import messenger
@@ -71,6 +75,37 @@ async def send_welcome(message: types.Message):
         return
 
     await dashboard(user)
+
+
+@dp.message_handler()
+async def tasks_acceptor(message: types.Message):
+    # Get user info from db
+    user = session.query(User).filter_by(tid=message.from_user.id).first()
+
+    # if unregistered --> add to database and onboard
+    if user is None:
+        await register_and_onboard(message.from_user.id)
+        return
+    if user.gid is None or user.vid is None:
+        await onboarding.select_prefix(message.from_user.id)
+        return
+
+  #  headers = {'User-Agent': 'Kissinger/1.0'}
+   # payload = {'code': message.text.encode('utf-8'), 'csrf_token': user.lt_token}
+    # TODO: Договориcь о нормальном API, ну что это за ёбань с плясками?
+    browser = RoboBrowser(history=True)
+    browser.open("http://kispython.ru" + '/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task))
+
+    form = browser.get_form(action='/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task))
+    form  # <RoboForm q=>
+    form['code'].value = message #.text.encode('utf-8')
+    browser.submit_form(form)
+    r = requests.post("http://kispython.ru/" + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task), headers=headers,data=payload)
+
+    print(browser.select("card-subtitle"))
+    print(browser.response)
+    #print(str(r.status_code) + ': ' + str(r.content))
+    await open_task(user, user.last_task)
 
 
 #
@@ -148,7 +183,7 @@ async def register_and_onboard(tid):
 
 async def open_task(user, taskid, mid=0, callid=0):
     # TODO: on all requests check status code
-    r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + taskid)
+    r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(taskid))
     try:
         answer = "Задание " + str(int(taskid) + 1) + "\n"
 
@@ -179,12 +214,18 @@ async def open_task(user, taskid, mid=0, callid=0):
             types.InlineKeyboardButton(text="<--", callback_data="dashboard")
         )
         await messenger.edit_or_send(user.tid, answer, keyboard, mid)
-        user.last_task = taskid
-        session.commit()
+
+
+
+        # r = requests.get("http://kispython.ru" + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + taskid)
+
     except:
         # TODO: Костыльно как-то, переделай
         await messenger.popup_error(callid, "⛔ Не удалось выполнить запрос")
 
+
+        user.last_task = taskid
+    session.commit()
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

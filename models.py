@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column
+from sqlalchemy import Integer, Column, String
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -11,3 +11,4 @@ class User(Base):
     gid = Column(Integer, nullable=True)
     vid = Column(Integer, nullable=True)
     last_task = Column(Integer, nullable=True)
+    lt_token = Column(String, nullable= True)
