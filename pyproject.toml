@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "kissinger"
+version = "1.0"
+description = "Telegram bot for kispython"
+authors = ["aaplnv <56654805+aaplnv@users.noreply.github.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+logging = "^0.4.9"
+requests = "^2.27.1"
+SQLAlchemy = "^1.4.32"
+PyYAML = "^6.0"
+aiogram = "^2.19"
+Werkzeug = "^2.0.3"
+robobrowser = "^0.5.3"
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
