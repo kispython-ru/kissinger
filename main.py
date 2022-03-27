@@ -1,13 +1,11 @@
 import logging
 
 import requests
-import sqlalchemy as db
 import yaml
 
 from aiogram import Dispatcher, executor, types
 
 from aiogram.dispatcher import filters
-from sqlalchemy.orm import Session
 
 import werkzeug
 
@@ -26,10 +24,6 @@ logging.basicConfig(level=logging.INFO)
 # Initialize bot and dispatcher
 dp = Dispatcher(messenger.bot)
 
-# Initialize database
-engine = db.create_engine('sqlite:///kissinger.sqlite')
-session = Session(bind=engine)
-
 # TODO: Config initialization must be centralised. And config path put to .env
 config = yaml.safe_load(open("config.yml"))
 
@@ -37,10 +31,7 @@ config = yaml.safe_load(open("config.yml"))
 @dp.message_handler((filters.RegexpCommandsFilter(regexp_commands=['task_([0-9]*)'])))
 async def send_help(message: types.Message, regexp_command):
     # TODO: User registration must be centralized
-    user = session.query(User).filter_by(tid=message.from_user.id).first()
-    if user.gid is None or user.vid is None:
-        await onboarding.select_prefix(message.from_user.id)
-        return
+    user = await dbmanager.getuser(message.from_user.id)
 
     await open_task(user, str(int(regexp_command.group(1)) - 1))
 
@@ -52,46 +43,22 @@ async def send_help(message: types.Message):
 
 @dp.message_handler(commands=['reset'], commands_prefix='!/')
 async def send_help(message: types.Message):
-    user = session.query(User).filter_by(tid=message.from_user.id).first()
-
-    user.vid = None
-    user.gid = None
-    user.last_task = None
-    session.commit()
-
+    user = await dbmanager.getuser(message.from_user.id)
+    await dbmanager.resetuser(user)
     await message.reply("✅ Настройки сброшены!")
-
     await onboarding.select_prefix(user.tid)
 
 
 @dp.message_handler(commands=['start'], commands_prefix='!/')
 async def send_welcome(message: types.Message):
-    # Get user info from db
-    user = session.query(User).filter_by(tid=message.from_user.id).first()
-
-    # if unregistered --> add to database and onboard
-    if user is None:
-        await register_and_onboard(message.from_user.id)
-        return
-    if user.gid is None or user.vid is None:
-        await onboarding.select_prefix(message.from_user.id)
-        return
-
+    user = await dbmanager.getuser(message.from_user.id)
     await dashboard(user)
 
 
 @dp.message_handler()
 async def tasks_acceptor(message: types.Message):
     # Get user info from db
-    user = session.query(User).filter_by(tid=message.from_user.id).first()
-
-    # if unregistered --> add to database and onboard
-    if user is None:
-        await register_and_onboard(message.from_user.id)
-        return
-    if user.gid is None or user.vid is None:
-        await onboarding.select_prefix(message.from_user.id)
-        return
+    user = await dbmanager.getuser(message.from_user.id)
 
     # TODO: Договориcь о нормальном API, ну что это за ёбань с плясками?
 
@@ -118,12 +85,7 @@ async def tasks_acceptor(message: types.Message):
 @dp.callback_query_handler()
 async def callback_handler(callback: types.CallbackQuery):
     # Get user info from db
-    user = session.query(User).filter_by(tid=callback.from_user.id).first()
-
-    # if unregistered --> add to database and onboard
-    if user is None:
-        await register_and_onboard(callback.from_user.id)
-        return
+    user = await dbmanager.getuserraw(callback.from_user.id)
 
     # Get payload from callback data
     payload = callback.data.split("_")
@@ -136,11 +98,11 @@ async def callback_handler(callback: types.CallbackQuery):
             await onboarding.select_prefix(callback.from_user.id, callback.message.message_id)
         case "variantonboard":
             if len(payload) > 1:
-                await dbmanager.record_gid(session, user, payload[1])
+                await dbmanager.record_gid(user, payload[1])
             await onboarding.select_variant(callback.from_user.id, callback.message.message_id)
         case "variantselected":
             if len(payload) > 1:
-                await dbmanager.record_vid(session, user, payload[1])
+                await dbmanager.record_vid(user, payload[1])
             await dashboard(user, callback.message.message_id)
         case "task":
             await open_task(user, payload[1], callback.message.message_id, callback.id)
@@ -172,14 +134,6 @@ async def dashboard(user, mid=0):
             types.InlineKeyboardButton(text=answer, callback_data="task_" + str(task['id']))
         )
     await messenger.edit_or_send(user.tid, "👨‍🏫 Ваши успехи в обучении:", keyboard, mid)
-
-
-async def register_and_onboard(tid):
-    session.add(User(
-        tid=tid,
-    ))
-    session.commit()
-    await onboarding.select_prefix(tid)
 
 
 # TODO: onerror show it's reason (is not implemented in api, mb i should parse webbage again
@@ -231,9 +185,7 @@ async def open_task(user, taskid, mid=0, callid=0):
         types.InlineKeyboardButton(text="<--", callback_data="dashboard")
     )
     await messenger.edit_or_send(user.tid, answer, keyboard, mid)
-
-    user.last_task = taskid
-    session.commit()
+    await dbmanager.applylasttask(user, taskid)
 
 
 if __name__ == '__main__':
