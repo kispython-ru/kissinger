@@ -17,7 +17,7 @@ from aiogram import Bot
 
 # Init telegram bot api
 # TODO: Config initialization must be centralised. And config path put to .env
-config = yaml.safe_load(open("config.yml"))
+config = yaml.safe_load(open("src/config.yml"))
 bot = Bot(token=config['TOKEN'])
 
 

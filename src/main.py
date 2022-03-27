@@ -13,10 +13,8 @@ import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
 from robobrowser import RoboBrowser
 
-import dbmanager
-import messenger
+from src import dbmanager, messenger
 import onboarding
-from models import User
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 dp = Dispatcher(messenger.bot)
 
 # TODO: Config initialization must be centralised. And config path put to .env
-config = yaml.safe_load(open("config.yml"))
+config = yaml.safe_load(open("src/config.yml"))
 
 
 @dp.message_handler((filters.RegexpCommandsFilter(regexp_commands=['task_([0-9]*)'])))

@@ -15,9 +15,9 @@ import requests
 import yaml
 from aiogram import types
 
-import messenger
+from src import messenger
 
-config = yaml.safe_load(open("config.yml"))
+config = yaml.safe_load(open("src/config.yml"))
 
 
 # Send message with variant list
