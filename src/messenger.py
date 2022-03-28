@@ -17,6 +17,8 @@ from aiogram import Bot
 
 # Init telegram bot api
 # TODO: Config initialization must be centralised. And config path put to .env
+from aiogram.utils.exceptions import MessageNotModified
+
 config = yaml.safe_load(open("src/config.yml"))
 bot = Bot(token=config['TOKEN'])
 
@@ -28,6 +30,8 @@ async def edit_or_send(tid, text, keyboard=None, mid=0):
         try:
             await bot.edit_message_text(chat_id=tid, message_id=mid, reply_markup=keyboard, text=text)
             return mid
+        except MessageNotModified:
+            print() # Ignore
         except:
             return (await bot.send_message(chat_id=tid, reply_markup=keyboard, text=text)).message_id
     else:

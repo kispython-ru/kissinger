@@ -159,7 +159,8 @@ async def open_task(user, taskid, mid=0, callid=0):
     keyboard.add(
         types.InlineKeyboardButton(text="<--", callback_data="dashboard")
     )
-    mid = await messenger.edit_or_send(user.tid, answer, keyboard, mid)
+    if mid==0 or (r['status'] != 1 and r['status'] != 0):
+        mid = await messenger.edit_or_send(user.tid, answer, keyboard, mid)
     await dbmanager.applylasttask(user, taskid)
 
     # Auto update on working
