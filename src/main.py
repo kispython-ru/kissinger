@@ -58,26 +58,35 @@ async def tasks_acceptor(message: types.Message):
     # Get user info from db
     user = await dbmanager.getuser(message.from_user.id)
 
-    # TODO: Договориcь о нормальном API, ну что это за ёбань с плясками?
+    # TODO: Official send_task support
+    await send_task_bypass(user.gid, user.vid, user.last_task, message.text)
 
+    # Redirect to task viewer
+    await open_task(user, user.last_task)
+
+
+# Bypass official api if you have any problems
+async def send_task_bypass(gid, vid, taskid, solution):
     # Create headless browser
     browser = RoboBrowser(user_agent='Kissinger/1.0')
 
     # Open DTA and insert code to form
-    browser.open("http://kispython.ru" + '/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task))
-    form = browser.get_form(action='/group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(user.last_task))
+    browser.open("http://kispython.ru" + '/group/' + str(gid) + '/variant/' + str(vid) + '/task/' + str(
+        taskid))
+    form = browser.get_form(
+        action='/group/' + str(gid) + '/variant/' + str(vid) + '/task/' + str(taskid))
     form  # <RoboForm q=>
-    form['code'].value = message  # .text.encode('utf-8')
+    form['code'].value = undo_telegram_solution_modifications(solution)
     browser.submit_form(form)
-
     # TODO: check is request successful
 
-    # Redirect to task viewer
-    await open_task(user, user.last_task)
-    # Нет, я не могу просто отправить POST. В форме нужно передавать не только code, но и csrf token, который где-то нужно взять
+
+# Telegram can cut some important characters from your code. But we can fix it.
+async def undo_telegram_solution_modifications(solution):
+    # TODO: Undo telegram markdown styles
+    return solution + "\n"
 
 
-#
 # Here I handle all callback requests. IDK how to make filter on aiogram level so...
 # TODO: Better action name management
 @dp.callback_query_handler()
@@ -115,19 +124,8 @@ async def dashboard(user, mid=0):
     r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/list')
     keyboard = types.InlineKeyboardMarkup()
     for task in r.json():
-        answer = ""
-        match task['status']:
-            case 0:
-                answer += '⏳ '
-            case 1:
-                answer += '🏃‍♂️💨 '
-            case 2:
-                answer += '✔️ '
-            case 3:
-                answer += '❌ '
-            case 4:
-                answer += '⚪ '
-        answer += "Задание " + str(task['id'] + 1) + ": " + task['status_name']
+        emoji = await emoji_builder(task['status'])
+        answer = emoji + "Задание " + str(task['id'] + 1) + ": " + task['status_name']
         keyboard.add(
             types.InlineKeyboardButton(text=answer, callback_data="task_" + str(task['id']))
         )
@@ -142,7 +140,7 @@ async def open_task(user, taskid, mid=0, callid=0):
     #
     # There are problem: direct request returns 500 sometimes
     # So first of all:
-    # TODO: Resolve promlem with official api
+    # TODO: Resolve problem with official api
     # Second one:
     # For now we will make LIST request and take necessary task by it's id
 
@@ -151,27 +149,9 @@ async def open_task(user, taskid, mid=0, callid=0):
 
     href = r['source']
 
-    try:
-        match r['status']:
-            case 0:
-                answer += '⏳ '
-            case 1:
-                answer += '🏃‍♂️💨 '
-            case 2:
-                answer += '✔️ '
-            case 3:
-                answer += '❌ '
-            case 4:
-                answer += '⚪ '
+    answer += await emoji_builder(r['status']) + r['status_name'] + "\n"
+    answer += await parse_task(href)
 
-        answer += r["status_name"] + "\n\n"
-    except:
-        # TODO: Костыльно как-то, переделай
-        await messenger.popup_error(callid, "⛔ Не удалось выполнить запрос")
-
-    # TODO: Fix bug where ios client can't open this link
-    # TODO: Smart webpage parsing
-    answer += "Ссылка на задание:  " + href + "\n\n"
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
     keyboard = types.InlineKeyboardMarkup()
     # TODO: Autoupdate
@@ -184,6 +164,28 @@ async def open_task(user, taskid, mid=0, callid=0):
     )
     await messenger.edit_or_send(user.tid, answer, keyboard, mid)
     await dbmanager.applylasttask(user, taskid)
+
+
+async def parse_task(url):
+    # TODO: Use RoboBrowser, parse information and paste it here
+    # if domain = sovietov.com ==> parse; else:
+    return "Условие: " + url + "\n\n"
+
+
+async def emoji_builder(statuscode):
+    answer = ""
+    match statuscode:
+        case 0:
+            answer += '⏳ '
+        case 1:
+            answer += '🏃‍♂️💨 '
+        case 2:
+            answer += '✔️ '
+        case 3:
+            answer += '❌ '
+        case 4:
+            answer += '⚪ '
+    return answer
 
 
 if __name__ == '__main__':
