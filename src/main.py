@@ -85,6 +85,8 @@ async def send_task_bypass(gid, vid, taskid, solution):
 # Telegram can cut some important characters from your code. But we can fix it.
 async def undo_telegram_solution_modifications(solution):
     # TODO: Undo telegram markdown styles
+    # Собираю инфу:
+    # * и ** выделают код курсивом и жирным. Выход: проверка на стили, восстановление звёздочек в случае обнаружения
     return solution + "\n"
 
 
@@ -133,20 +135,11 @@ async def dashboard(user, mid=0):
     await messenger.edit_or_send(user.tid, "👨‍🏫 Ваши успехи в обучении:", keyboard, mid)
 
 
-# TODO: onerror show it's reason (is not implemented in api, mb i should parse webbage again
 async def open_task(user, taskid, mid=0, callid=0):
     # answer string
     answer = "Задание " + str(int(taskid) + 1) + "\n"
 
-    #
-    # There are problem: direct request returns 500 sometimes
-    # So first of all:
-    # TODO: Resolve problem with official api
-    # Second one:
-    # For now we will make LIST request and take necessary task by it's id
-
-    req = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/list')
-    r = req.json()[int(taskid)]
+    r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(taskid)).json()
 
     href = r['source']
 
