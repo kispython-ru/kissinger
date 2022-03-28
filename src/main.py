@@ -1,4 +1,5 @@
 import logging
+import time
 
 import requests
 import yaml
@@ -154,16 +155,17 @@ async def open_task(user, taskid, mid=0, callid=0):
 
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
     keyboard = types.InlineKeyboardMarkup()
-    # TODO: Autoupdate
-    # TODO: Show button only for tasks in processing
-    keyboard.add(
-        types.InlineKeyboardButton(text="Обновить", callback_data="task_" + str(taskid))
-    )
+
     keyboard.add(
         types.InlineKeyboardButton(text="<--", callback_data="dashboard")
     )
-    await messenger.edit_or_send(user.tid, answer, keyboard, mid)
+    mid = await messenger.edit_or_send(user.tid, answer, keyboard, mid)
     await dbmanager.applylasttask(user, taskid)
+
+    # Auto update on working
+    if r['status'] == 1 or r['status'] == 0:
+        time.sleep(5)
+        await open_task(user, taskid, mid, callid)
 
 
 async def parse_task(url):

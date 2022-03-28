@@ -25,9 +25,13 @@ bot = Bot(token=config['TOKEN'])
 # TODO: Send new message on error with edit_message function
 async def edit_or_send(tid, text, keyboard=None, mid=0):
     if mid != 0:
-        await bot.edit_message_text(chat_id=tid, message_id=mid, reply_markup=keyboard, text=text)
+        try:
+            await bot.edit_message_text(chat_id=tid, message_id=mid, reply_markup=keyboard, text=text)
+            return mid
+        except:
+            return (await bot.send_message(chat_id=tid, reply_markup=keyboard, text=text)).message_id
     else:
-        await bot.send_message(chat_id=tid, reply_markup=keyboard, text=text)
+        return (await bot.send_message(chat_id=tid, reply_markup=keyboard, text=text)).message_id
 
 
 async def popup_error(callid, text):
