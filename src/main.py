@@ -36,7 +36,10 @@ async def send_help(message: types.Message, regexp_command):
 
 @dp.message_handler(commands=['help'], commands_prefix='!/')
 async def send_help(message: types.Message):
-    await message.reply("Полковнику никто... Не пишет\nПолковника никто... не ждёёт...")
+    await message.reply("Список доступных команд:\n\n"
+                        "\\reset -- Сброс варианта и группы\n"
+                        "\\start -- Главное меню бота")
+
 
 
 @dp.message_handler(commands=['reset'], commands_prefix='!/')
