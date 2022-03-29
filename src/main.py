@@ -128,7 +128,7 @@ async def callback_handler(callback: types.CallbackQuery):
 async def dashboard(user, mid=0):
     tasks = await postman.get_alltasks(user)
     keyboard = types.InlineKeyboardMarkup()
-    for task in tasks.json():
+    for task in tasks:
         emoji = await emoji_builder(task['status'])
         answer = emoji + "Задание " + str(task['id'] + 1) + ": " + task['status_name']
         keyboard.add(
@@ -146,6 +146,7 @@ async def open_task(user, taskid, mid=0, callid=0):
     href = task['source']
 
     answer += await emoji_builder(task['status']) + task['status_name'] + "\n"
+    answer += task["error_message"]+"\n"
     answer += await parse_task(href)
 
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
