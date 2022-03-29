@@ -1,7 +1,6 @@
 import logging
 import time
 
-import requests
 import yaml
 
 from aiogram import Dispatcher, executor, types
@@ -14,7 +13,7 @@ import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
 from robobrowser import RoboBrowser
 
-from src import dbmanager, messenger
+from src import dbmanager, messenger, postman
 import onboarding
 
 # Configure logging
@@ -72,12 +71,12 @@ async def send_task_bypass(gid, vid, taskid, solution):
     browser = RoboBrowser(user_agent='Kissinger/1.0')
 
     # Open DTA and insert code to form
-    browser.open("http://kispython.ru" + '/group/' + str(gid) + '/variant/' + str(vid) + '/task/' + str(
+    browser.open(config['URL'] + '/group/' + str(gid) + '/variant/' + str(vid) + '/task/' + str(
         taskid))
     form = browser.get_form(
         action='/group/' + str(gid) + '/variant/' + str(vid) + '/task/' + str(taskid))
     form  # <RoboForm q=>
-    form['code'].value = undo_telegram_solution_modifications(solution)
+    form['code'].value = await undo_telegram_solution_modifications(solution)
     browser.submit_form(form)
     # TODO: check is request successful
 
@@ -124,9 +123,9 @@ async def callback_handler(callback: types.CallbackQuery):
 
 
 async def dashboard(user, mid=0):
-    r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/list')
+    tasks = await postman.get_alltasks(user)
     keyboard = types.InlineKeyboardMarkup()
-    for task in r.json():
+    for task in tasks.json():
         emoji = await emoji_builder(task['status'])
         answer = emoji + "Задание " + str(task['id'] + 1) + ": " + task['status_name']
         keyboard.add(
@@ -139,11 +138,11 @@ async def open_task(user, taskid, mid=0, callid=0):
     # answer string
     answer = "Задание " + str(int(taskid) + 1) + "\n"
 
-    r = requests.get(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(taskid)).json()
+    task = await postman.get_task(user, taskid)
 
-    href = r['source']
+    href = task['source']
 
-    answer += await emoji_builder(r['status']) + r['status_name'] + "\n"
+    answer += await emoji_builder(task['status']) + task['status_name'] + "\n"
     answer += await parse_task(href)
 
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
@@ -152,12 +151,12 @@ async def open_task(user, taskid, mid=0, callid=0):
     keyboard.add(
         types.InlineKeyboardButton(text="<--", callback_data="dashboard")
     )
-    if mid==0 or (r['status'] != 1 and r['status'] != 0):
+    if mid == 0 or (task['status'] != 1 and task['status'] != 0):
         mid = await messenger.edit_or_send(user.tid, answer, keyboard, mid)
     await dbmanager.applylasttask(user, taskid)
 
     # Auto update on working
-    if r['status'] == 1 or r['status'] == 0:
+    if task['status'] == 1 or task['status'] == 0:
         time.sleep(5)
         await open_task(user, taskid, mid, callid)
 
