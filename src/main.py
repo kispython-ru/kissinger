@@ -79,7 +79,7 @@ async def send_task_bypass(gid, vid, taskid, solution):
     browser = RoboBrowser(user_agent='Kissinger/1.0')
 
     # Open DTA and insert code to form
-    browser.open(config['URL'] + '/group/' + str(gid) + '/variant/' + str(vid) + '/task/' + str(
+    browser.open("http://kispython.ru/" + 'group/' + str(gid) + '/variant/' + str(vid) + '/task/' + str(
         taskid))
     form = browser.get_form(
         action='/group/' + str(gid) + '/variant/' + str(vid) + '/task/' + str(taskid))
@@ -151,7 +151,8 @@ async def open_task(user, taskid, mid=0, callid=0):
     href = task['source']
 
     answer += await emoji_builder(task['status']) + task['status_name'] + "\n"
-    answer += task["error_message"]+"\n"
+    if task["error_message"] is not None:
+        answer += str(task["error_message"])+"\n"
     answer += await parse_task(href)
 
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
