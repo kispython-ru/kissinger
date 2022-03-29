@@ -26,6 +26,11 @@ dp = Dispatcher(messenger.bot)
 config = yaml.safe_load(open("src/config.yml"))
 
 
+@dp.message_handler(commands=['about'], commands_prefix='!/')
+async def about(message: types.Message):
+    await messenger.edit_or_send(message.from_user.id, "🤵‍♂️ Kissinger v1.0\n\nGithub: github.com/aaplnv/kissinger\n\nСделал @aaplnv")
+
+
 @dp.message_handler((filters.RegexpCommandsFilter(regexp_commands=['task_([0-9]*)'])))
 async def send_help(message: types.Message, regexp_command):
     # TODO: User registration must be centralized
