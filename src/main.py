@@ -62,7 +62,7 @@ async def send_welcome(message: types.Message):
 
 
 @dp.message_handler()
-async def tasks_acceptor(message: types.Message):
+async def accept_task(message: types.Message):
     # Get user info from db
     user = await dbmanager.getuser(message.from_user.id)
 
@@ -79,10 +79,9 @@ async def send_task_bypass(gid, vid, taskid, solution):
     browser = RoboBrowser(user_agent='Kissinger/1.0')
 
     # Open DTA and insert code to form
-    browser.open("http://kispython.ru/" + 'group/' + str(gid) + '/variant/' + str(vid) + '/task/' + str(
-        taskid))
+    browser.open(f"http://kispython.ru/group/{gid}/variant/{vid}/task/{taskid}")
     form = browser.get_form(
-        action='/group/' + str(gid) + '/variant/' + str(vid) + '/task/' + str(taskid))
+        action=f"/group/{gid}/variant/{vid}/task/{taskid}")
     form  # <RoboForm q=>
     form['code'].value = await undo_telegram_solution_modifications(solution)
     browser.submit_form(form)
@@ -135,9 +134,9 @@ async def dashboard(user, mid=0):
     keyboard = types.InlineKeyboardMarkup()
     for task in tasks:
         emoji = await emoji_builder(task['status'])
-        answer = emoji + "Задание " + str(task['id'] + 1) + ": " + task['status_name']
+        answer = emoji + f"Задание {(task['id'] + 1)}: {task['status_name']}"
         keyboard.add(
-            types.InlineKeyboardButton(text=answer, callback_data="task_" + str(task['id']))
+            types.InlineKeyboardButton(text=answer, callback_data=f"task_{str(task['id'])}")
         )
     await messenger.edit_or_send(user.tid, "👨‍🏫 Ваши успехи в обучении:", keyboard, mid)
 
@@ -178,19 +177,8 @@ async def parse_task(url):
 
 
 async def emoji_builder(statuscode):
-    answer = ""
-    match statuscode:
-        case 0:
-            answer += '⏳ '
-        case 1:
-            answer += '🏃‍♂️💨 '
-        case 2:
-            answer += '✔️ '
-        case 3:
-            answer += '❌ '
-        case 4:
-            answer += '⚪ '
-    return answer
+    emojis = ['⏳ ', '🏃‍♂️💨 ', '✔️ ', '❌ ', '⚪️ ']
+    return emojis[statuscode]
 
 
 if __name__ == '__main__':

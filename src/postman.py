@@ -7,12 +7,12 @@ config = yaml.safe_load(open("src/config.yml"))
 
 
 async def get_alltasks(user):
-    r = await make_request(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/list')
+    r = await make_request(f"{config['URL']}group/{user.gid}/variant/{user.vid}/task/list")
     return r.json()
 
 
 async def get_task(user, taskid):
-    r = await make_request(config['URL'] + 'group/' + str(user.gid) + '/variant/' + str(user.vid) + '/task/' + str(taskid))
+    r = await make_request(f"{config['URL']}group/{user.gid}/variant/{user.vid}/task/{taskid}")
     return r.json()
 
 

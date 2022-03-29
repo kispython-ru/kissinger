@@ -24,14 +24,13 @@ bot = Bot(token=config['TOKEN'])
 
 
 # Edit existed message or send new
-# TODO: Send new message on error with edit_message function
 async def edit_or_send(tid, text, keyboard=None, mid=0):
     if mid != 0:
         try:
             await bot.edit_message_text(chat_id=tid, message_id=mid, reply_markup=keyboard, text=text)
             return mid
         except MessageNotModified:
-            print() # Ignore
+            pass
         except:
             return (await bot.send_message(chat_id=tid, reply_markup=keyboard, text=text)).message_id
     else:
