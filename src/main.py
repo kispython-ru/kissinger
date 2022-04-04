@@ -162,7 +162,9 @@ async def open_task(user, taskid, mid=0, callid=0):
     )
     if mid == 0 or (task['status'] != 1 and task['status'] != 0):
         mid = await messenger.edit_or_send(user.tid, answer, keyboard, mid)
-    await dbmanager.applylasttask(user, taskid)
+
+    if (task['status'] == 3 or task['status'] == 4):
+        await dbmanager.applylasttask(user, taskid)
 
     # Auto update on working
     if task['status'] == 1 or task['status'] == 0:
