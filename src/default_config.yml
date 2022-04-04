@@ -23,6 +23,9 @@ TOKEN:
 URL: http://kispython.ru/api/v1/
 
 #
+# Set here your SQLite database path
+SQLITE: sqlite:///kissinger.sqlite
+#
 # Rename this file
 # From default_config.yml to config.yml
 # Or you can change config path in app, but it's too hard, isn't it?
