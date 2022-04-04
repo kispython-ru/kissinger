@@ -16,4 +16,6 @@ Telegram бот для kispython.ru
 
 ``cd kissinger``
 
+На этом этапе нужно настроить конфиг бота, и вписать его название в .env "CONFIG_PATH"
+
 ``poetry run main.py``

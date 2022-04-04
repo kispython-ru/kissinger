@@ -11,6 +11,7 @@
 #
 # Just cover on telegram api library with resolutions of most known problems with telegram bot api
 #
+import os
 
 import yaml
 from aiogram import Bot
@@ -19,7 +20,7 @@ from aiogram import Bot
 # TODO: Config initialization must be centralised. And config path put to .env
 from aiogram.utils.exceptions import MessageNotModified
 
-config = yaml.safe_load(open("src/config.yml"))
+config = yaml.safe_load(open(os.environ.get("CONFIG_PATH")))
 bot = Bot(token=config['TOKEN'])
 
 

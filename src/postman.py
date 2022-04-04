@@ -1,9 +1,10 @@
+import os
 import time
 
 import requests
 import yaml
 
-config = yaml.safe_load(open("src/config.yml"))
+config = yaml.safe_load(open(os.environ.get("CONFIG_PATH")))
 
 
 async def get_alltasks(user):

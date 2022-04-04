@@ -13,6 +13,8 @@
 #
 
 # write (override) group id for specified user
+import os
+
 import yaml
 from sqlalchemy.orm import Session
 import sqlalchemy as db
@@ -20,7 +22,7 @@ import sqlalchemy as db
 import onboarding
 from models import User
 
-config = yaml.safe_load(open("src/config.yml"))
+config = yaml.safe_load(open(os.environ.get("CONFIG_PATH")))
 # Initialize database
 engine = db.create_engine(config['SQLITE'])
 session = Session(bind=engine)
