@@ -17,6 +17,7 @@ async def get_task(user, taskid):
     return r.json()
 
 
+#
 # Core method
 # TODO: Количество попыток обращения и задержка между обращениями должны быть в конфиге
 async def make_request(url):

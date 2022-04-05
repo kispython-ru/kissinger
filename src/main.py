@@ -13,7 +13,7 @@ import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
 from robobrowser import RoboBrowser
 
-from src import dbmanager, messenger, postman
+from src import dbmanager, messenger, dta
 import onboarding
 
 # Configure logging
@@ -71,6 +71,9 @@ async def accept_task(message: types.Message):
 
     # Redirect to task viewer
     await open_task(user, user.last_task)
+
+
+async def send_task(gid, vid, taskid, message):
 
 
 # Bypass official api if you have any problems
