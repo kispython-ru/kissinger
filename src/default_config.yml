@@ -15,12 +15,17 @@
 #
 # Set here token for your telegram bot
 # Use @Botfather bot in Telegram to create new one and get more instructions
-TOKEN: 
+TGTOKEN:
 
 #
 # Set here domain with DTA instance
 # Don't forget about protocol (http/https) and leave it with slash in the end
 URL: http://kispython.ru/api/v1/
+
+#
+# Set here your DTA access_token
+# If you don't have one, i will use headless browser
+DTATOKEN:
 
 #
 # Set here your SQLite database path

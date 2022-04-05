@@ -67,13 +67,21 @@ async def accept_task(message: types.Message):
     user = await dbmanager.getuser(message.from_user.id)
 
     # TODO: Official send_task support
-    await send_task_bypass(user.gid, user.vid, user.last_task, message.text)
+    try:
+        print("Trying to send task")
+        await send_task(user.gid, user.vid, user.last_task, message.text)
+        print("Task sent")
+    except Exception as e:
+        print("Error sending task")
+        print(e)
+        await send_task_bypass(user.gid, user.vid, user.last_task, message.text)
 
     # Redirect to task viewer
     await open_task(user, user.last_task)
 
 
 async def send_task(gid, vid, taskid, message):
+    await dta.send_task(gid, vid, taskid, message)
 
 
 # Bypass official api if you have any problems
@@ -133,7 +141,7 @@ async def callback_handler(callback: types.CallbackQuery):
 
 
 async def dashboard(user, mid=0):
-    tasks = await postman.get_alltasks(user)
+    tasks = await dta.get_alltasks(user)
     keyboard = types.InlineKeyboardMarkup()
     for task in tasks:
         emoji = await emoji_builder(task['status'])
@@ -148,7 +156,7 @@ async def open_task(user, taskid, mid=0, callid=0):
     # answer string
     answer = "Задание " + str(int(taskid) + 1) + "\n"
 
-    task = await postman.get_task(user, taskid)
+    task = await dta.get_task(user, taskid)
 
     href = task['source']
 
