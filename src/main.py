@@ -47,9 +47,7 @@ async def send_help(message: types.Message):
                         "Q: Задание не принимается. Видимо, телеграмм отформатировал сообщение так, что kispython его не воспринимает. Что делать?\n"
                         "A: Попробуйте заключить код в три апострафа (```) в начале и в конце. Так телеграмм не будет применять markdown на код\n\n"
                         "Q: Как связаться с разработчиками?"
-                        "A: @worldbeater по вопросам kispython, @aaplnv по вопросам бота"
-                    )
-
+                        "A: @worldbeater по вопросам kispython, @aaplnv по вопросам бота")
 
 
 @dp.message_handler(commands=['reset'], commands_prefix='!/')
@@ -74,23 +72,23 @@ async def accept_task(message: types.Message):
     # TODO: Official send_task support
     try:
         print("Trying to send task")
-        await send_task(user.gid, user.vid, user.last_task, message.text)
+        await send_task(user.gid, user.vid, user.last_task, message.text, message.entities)
         print("Task sent")
     except Exception as e:
         print("Error sending task")
         print(e)
-        await send_task_bypass(user.gid, user.vid, user.last_task, message.text)
+        await send_task_bypass(user.gid, user.vid, user.last_task, message.text, message.entities)
 
     # Redirect to task viewer
     await open_task(user, user.last_task)
 
 
-async def send_task(gid, vid, taskid, message):
-    await dta.send_task(gid, vid, taskid, message)
+async def send_task(gid, vid, taskid, solution, entities):
+    await dta.send_task(gid, vid, taskid, await undo_telegram_solution_modifications(solution, entities))
 
 
 # Bypass official api if you have any problems
-async def send_task_bypass(gid, vid, taskid, solution):
+async def send_task_bypass(gid, vid, taskid, solution, entities):
     # Create headless browser
     browser = RoboBrowser(user_agent='Kissinger/1.0')
 
@@ -99,14 +97,20 @@ async def send_task_bypass(gid, vid, taskid, solution):
     form = browser.get_form(
         action=f"/group/{gid}/variant/{vid}/task/{taskid}")
     form  # <RoboForm q=>
-    form['code'].value = await undo_telegram_solution_modifications(solution)
+    form['code'].value = await undo_telegram_solution_modifications(solution, entities)
     browser.submit_form(form)
     # TODO: check is request successful
 
 
 # Telegram can cut some important characters from your code. But we can fix it.
-async def undo_telegram_solution_modifications(solution):
+async def undo_telegram_solution_modifications(solution, entities):
     # TODO: Undo telegram markdown styles
+
+    for entity in entities:
+        if entity.type == 'bold':
+            solution = solution[:entity.offset] + "** " + solution[entity.offset:(entity.offset + entity.length)] + " **" + solution[entity.offset + entity.length:]
+        if entity.type == 'italic':
+            solution = solution[:entity.offset] + "* " + solution[entity.offset:(entity.offset + entity.length)] + " *" + solution[entity.offset + entity.length:]
     # Собираю инфу:
     # * и ** выделают код курсивом и жирным. Выход: проверка на стили, восстановление звёздочек в случае обнаружения
     return solution + "\n"
