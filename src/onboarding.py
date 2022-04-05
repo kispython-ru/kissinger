@@ -24,11 +24,22 @@ config = yaml.safe_load(open(os.environ.get("CONFIG_PATH")))
 # Send message with variant list
 async def select_variant(tid, mid=0):
     r = requests.get(f"{config['URL']}variant/list")
-    keyboard = types.InlineKeyboardMarkup(3)
+
+    indexer = 1
+    if len(r.json()) % 4 == 0:
+        indexer = 4
+    elif len(r.json()) % 3 == 0:
+        indexer = 3
+    elif len(r.json()) % 2 == 0:
+        indexer = 2
+
+    keyboard = types.InlineKeyboardMarkup(indexer)
+    row = []
     for variant in r.json():
-        keyboard.add(
-            types.InlineKeyboardButton(text=variant+1, callback_data="variantselected_" + str(variant))
-        )
+        row.append(types.InlineKeyboardButton(text=variant + 1, callback_data="variantselected_" + str(variant)))
+        if len(row) == indexer:
+            keyboard.row(*row)
+            row = []
     keyboard.add(types.InlineKeyboardButton(text="<--", callback_data="variantonboard"))
     await messenger.edit_or_send(tid, "🗂️ Выберите свой вариант", keyboard, mid)
 
