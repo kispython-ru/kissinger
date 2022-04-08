@@ -8,14 +8,22 @@ Telegram бот для kispython.ru
 * Дает статистику успеваемости
 
 ## Установка
-*Поддержка docker будет в следующем обновлении*
+*Поддержка docker ещё в разработке*
 
-Скопируйте репозиторий и запустите бота. Требуется python >=3.10 и poetry
+### Если у вас Debian linux (и любой его форк):
+1. Скопируйте эту команду. Она загрузит репозиторий и установить все необходимые зависимости:
 
-``git clone https://github.com/aaplnv/kissinger``
+```git clone https://github.com/aaplnv/kissinger && cd kissinger && sudo make install```
 
-``cd kissinger``
+2. Теперь вам нужно заполнить конфигурацию. Откройте config и сдедуйте по инструкциям:
 
-На этом этапе нужно настроить конфиг бота, и вписать его название в .env "CONFIG_PATH"
+```nano src/default_config.py```
 
-``poetry run main.py``
+3. Теперь можно запускать:
+```make run```
+
+### Если у вас Windows:
+Сочуствую.
+
+### Если у вас MacOS:
+Завидую.
