@@ -22,6 +22,7 @@ import sqlalchemy as db
 import onboarding
 from models import User
 
+print('Database initialization...')
 config = yaml.safe_load(open(os.environ.get("CONFIG_PATH")))
 # Initialize database
 engine = db.create_engine(config['SQLITE'])

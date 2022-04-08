@@ -1,34 +1,79 @@
-import logging
-import time
+#
+# Initialization and checkup
+#
 
+print('''
+ ______ ______              _____
+ ___  //_/__(_)________________(_)_____________ _____________
+ __  ,<  __  /__  ___/_  ___/_  /__  __ \_  __ `/  _ \_  ___/
+ _  /| | _  / _(__  )_(__  )_  / _  / / /  /_/ //  __/  /
+ /_/ |_| /_/  /____/ /____/ /_/  /_/ /_/_\__, / \___//_/
+                                        /____/
+                         Modern Telegram bot for kispython.ru
+''')
+
+print('Loading dependencies...')
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+import os
 import yaml
 
+if os.getenv("CONFIG_PATH") is None:
+    print("[FATAL] Please set CONFIG_PATH environment variable")
+    exit(1)
+
+if os.path.exists(os.getenv("CONFIG_PATH")) is False:
+    print("[FATAL] Config file not found")
+    exit(1)
+
+config = yaml.safe_load(open(os.environ.get("CONFIG_PATH")))
+
+if config is None:
+    print("[FATAL] Config file is empty")
+    exit(1)
+
+if config["TGTOKEN"] is None:
+    print("[FATAL] Telegram token not found")
+    exit(1)
+
+if config["SQLITE"] is None:
+    print("[FATAL] SQLite database path not found")
+    exit(1)
+
+if config["URL"] is None:
+    print("[FATAL] Please set DTA URL in config file")
+    exit(1)
+
+if os.path.exists(config["SQLITE"]) is False:
+    print("[FATAL] SQLite database not found. Please create it manually (Automatically generation is not supported)")
+    exit(1)
+
+if config["DTATOKEN"] is None:
+    print("[WARN] DTA token not found. You can't use DTA legacy functions without it")
+
+import time
 from aiogram import Dispatcher, executor, types
 
 from aiogram.dispatcher import filters
 
 import werkzeug
 
-# Так надо
 werkzeug.cached_property = werkzeug.utils.cached_property
 from robobrowser import RoboBrowser
 
 from src import dbmanager, messenger, dta
 import onboarding
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-
-# Initialize bot and dispatcher
 dp = Dispatcher(messenger.bot)
-
-# TODO: Config initialization must be centralised. And config path put to .env
-config = yaml.safe_load(open("src/config.yml"))
 
 
 @dp.message_handler(commands=['about'], commands_prefix='!/')
 async def about(message: types.Message):
-    await messenger.edit_or_send(message.from_user.id, "🤵‍♂️ Kissinger v1.1\n\nGithub: github.com/aaplnv/kissinger\n\nСделал @aaplnv")
+    await messenger.edit_or_send(message.from_user.id,
+                                 "🤵‍♂️ Kissinger v1.1\n\nGithub: github.com/aaplnv/kissinger\n\nСделал @aaplnv")
 
 
 @dp.message_handler((filters.RegexpCommandsFilter(regexp_commands=['task_([0-9]*)'])))
@@ -108,9 +153,11 @@ async def undo_telegram_solution_modifications(solution, entities):
 
     for entity in entities:
         if entity.type == 'bold':
-            solution = solution[:entity.offset] + "** " + solution[entity.offset:(entity.offset + entity.length)] + " **" + solution[entity.offset + entity.length:]
+            solution = solution[:entity.offset] + "** " + solution[entity.offset:(
+                    entity.offset + entity.length)] + " **" + solution[entity.offset + entity.length:]
         if entity.type == 'italic':
-            solution = solution[:entity.offset] + "* " + solution[entity.offset:(entity.offset + entity.length)] + " *" + solution[entity.offset + entity.length:]
+            solution = solution[:entity.offset] + "* " + solution[entity.offset:(
+                    entity.offset + entity.length)] + " *" + solution[entity.offset + entity.length:]
     # Собираю инфу:
     # * и ** выделают код курсивом и жирным. Выход: проверка на стили, восстановление звёздочек в случае обнаружения
     return solution + "\n"
@@ -171,7 +218,7 @@ async def open_task(user, taskid, mid=0, callid=0):
 
     answer += await emoji_builder(task['status']) + task['status_name'] + "\n"
     if task["error_message"] is not None:
-        answer += str(task["error_message"])+"\n"
+        answer += str(task["error_message"]) + "\n"
     answer += await parse_task(href)
 
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
@@ -205,3 +252,4 @@ async def emoji_builder(statuscode):
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
+    print("[ OK ] Bot started")

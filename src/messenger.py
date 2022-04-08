@@ -20,8 +20,9 @@ from aiogram import Bot
 # TODO: Config initialization must be centralised. And config path put to .env
 from aiogram.utils.exceptions import MessageNotModified
 
+print('Telegram API initialization...')
 config = yaml.safe_load(open(os.environ.get("CONFIG_PATH")))
-bot = Bot(token=config['TOKEN'])
+bot = Bot(token=config['TGTOKEN'])
 
 
 # Edit existed message or send new
