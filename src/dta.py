@@ -18,6 +18,8 @@ async def get_task(user, taskid):
 
 
 async def send_task(gid, vid, taskid, solution):
+    if config['DTATOKEN'] is None:
+        raise Exception("DTA token is not set")
     r = await make_post_request(f"{config['URL']}group/{gid}/variant/{vid}/task/{taskid}", solution=solution)
     print(r.json())
     r.raise_for_status()  # I think it's useless

@@ -145,8 +145,6 @@ async def send_task_bypass(gid, vid, taskid, solution, entities):
 
 # Telegram can cut some important characters from your code. But we can fix it.
 async def undo_telegram_solution_modifications(solution, entities):
-    # TODO: Undo telegram markdown styles
-
     for entity in entities:
         if entity.type == 'bold':
             solution = solution[:entity.offset] + "** " + solution[entity.offset:(
@@ -154,8 +152,9 @@ async def undo_telegram_solution_modifications(solution, entities):
         if entity.type == 'italic':
             solution = solution[:entity.offset] + "* " + solution[entity.offset:(
                     entity.offset + entity.length)] + " *" + solution[entity.offset + entity.length:]
-    # Собираю инфу:
-    # * и ** выделают код курсивом и жирным. Выход: проверка на стили, восстановление звёздочек в случае обнаружения
+
+    solution = solution.replace('“', '"', -1)
+    solution = solution.replace('”', '"', -1)
     return solution + "\n"
 
 
