@@ -60,7 +60,7 @@ import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
 from robobrowser import RoboBrowser
 
-from src import dbmanager, messenger, dta
+import dbmanager, messenger, dta
 import onboarding
 
 dp = Dispatcher(messenger.bot)

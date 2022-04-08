@@ -16,7 +16,7 @@ import requests
 import yaml
 from aiogram import types
 
-from src import messenger
+import messenger
 
 config = yaml.safe_load(open(os.environ.get("CONFIG_PATH")))
 
