@@ -13,3 +13,10 @@ install:
 	pip3 install poetry &&
 	poetry install &&
 	poetry shell
+
+.PHONY: iusearchbtw
+iusearchbtw:
+	pacman -Suy python3-pip &&
+	pip3 install poetry &&
+	poetry install &&
+	poetry shell
