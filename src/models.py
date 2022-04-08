@@ -5,7 +5,7 @@ Base = declarative_base()
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "users",
     uid = Column(Integer, primary_key=True)
     tid = Column(Integer)
     gid = Column(Integer, nullable=True)

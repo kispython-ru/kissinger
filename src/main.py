@@ -16,7 +16,7 @@ print('Loading dependencies...')
 
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARN)
 
 import os
 import yaml
@@ -45,10 +45,6 @@ if config["SQLITE"] is None:
 
 if config["URL"] is None:
     print("[FATAL] Please set DTA URL in config file")
-    exit(1)
-
-if os.path.exists(config["SQLITE"]) is False:
-    print("[FATAL] SQLite database not found. Please create it manually (Automatically generation is not supported)")
     exit(1)
 
 if config["DTATOKEN"] is None:

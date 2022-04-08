@@ -16,7 +16,9 @@
 import os
 
 import yaml
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
+from sqlalchemy_utils import create_database, database_exists
 import sqlalchemy as db
 
 import onboarding
@@ -24,9 +26,20 @@ from models import User
 
 print('Database initialization...')
 config = yaml.safe_load(open(os.environ.get("CONFIG_PATH")))
-# Initialize database
+
+if not database_exists(config['SQLITE']):
+    print("[WARN] SQLite database not found. Creating...")
+    create_database(config['SQLITE'])
+
 engine = db.create_engine(config['SQLITE'])
 session = Session(bind=engine)
+
+if not inspect(engine).has_table(str(User.__tablename__)):
+    print('[WARN] Users table not found. Creating...')
+    metadata_obj = db.MetaData()
+    metadata_obj.create_all(engine, tables={User.__table__})
+    session.commit()
+    print('[ OK ] SQLite generated successfully.')
 
 
 # Write (override) group id to current user
@@ -46,7 +59,7 @@ async def getuser(tid):
     user = await getuserraw(tid)
     if user is None:
         await register(tid)
-        raise Exception("notregistered") # TODO: fix govnocod
+        raise Exception("notregistered")  # TODO: fix govnocod
     if user.gid is None or user.vid is None:
         await onboarding.select_prefix(tid)
         raise Exception("notonboarded")
