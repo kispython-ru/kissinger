@@ -40,7 +40,7 @@ async def select_variant(tid, mid=0):
         if len(row) == indexer:
             keyboard.row(*row)
             row = []
-    keyboard.add(types.InlineKeyboardButton(text="<--", callback_data="variantonboard"))
+    keyboard.add(types.InlineKeyboardButton(text="<--", callback_data="prefixonboard"))
     await messenger.edit_or_send(tid, "🗂️ Выберите свой вариант", keyboard, mid)
 
 
