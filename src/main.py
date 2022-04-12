@@ -1,6 +1,7 @@
 #
 # Initialization and checkup
 #
+import asyncio
 
 print('''
  ______ ______              _____
@@ -50,7 +51,6 @@ if config["URL"] is None:
 if config["DTATOKEN"] is None:
     print("[WARN] DTA token not found. You can't use DTA legacy functions without it")
 
-import time
 from aiogram import Dispatcher, executor, types
 
 from aiogram.dispatcher import filters
@@ -230,7 +230,7 @@ async def open_task(user, taskid, mid=0, callid=0):
 
     # Auto update on working
     if task['status'] == 1 or task['status'] == 0:
-        time.sleep(5)
+        await asyncio.sleep(5)
         await open_task(user, taskid, mid, callid)
 
 
