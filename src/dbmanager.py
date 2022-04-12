@@ -1,18 +1,8 @@
-#      _ _
-#     | | |
-#   __| | |__  _ __ ___   __ _ _ __   __ _  __ _  ___ _ __
-#  / _` | '_ \| '_ ` _ \ / _` | '_ \ / _` |/ _` |/ _ \ '__|
-# | (_| | |_) | | | | | | (_| | | | | (_| | (_| |  __/ |
-#  \__,_|_.__/|_| |_| |_|\__,_|_| |_|\__,_|\__, |\___|_|
-#                                           __/ |
-#                                          |___/
-
 #
 # Here I describe some syntactic sugar.
 # Have you seen news? More sugar!
 #
 
-# write (override) group id for specified user
 import os
 
 import yaml

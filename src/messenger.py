@@ -1,15 +1,5 @@
 #
-#
-#  _ __ ___   ___  ___ ___  ___ _ __   __ _  ___ _ __
-# | '_ ` _ \ / _ \/ __/ __|/ _ \ '_ \ / _` |/ _ \ '__|
-# | | | | | |  __/\__ \__ \  __/ | | | (_| |  __/ |
-# |_| |_| |_|\___||___/___/\___|_| |_|\__, |\___|_|
-#                                      __/ |
-#                                     |___/
-
-#
-#
-# Just cover on telegram api library with resolutions of most known problems with telegram bot api
+# Just cover on telegram api library with resolutions of most known problems
 #
 import os
 
