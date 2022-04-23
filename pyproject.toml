@@ -6,14 +6,14 @@ authors = ["aaplnv <56654805+aaplnv@users.noreply.github.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-requests = "^2.27.1"
-SQLAlchemy = "^1.4.32"
-PyYAML = "^6.0"
-aiogram = "^2.19"
-Werkzeug = "^2.0.3"
-robobrowser = "^0.5.3"
-SQLAlchemy-Utils = "^0.38.2"
+python = "3.10"
+requests = "2.27.1"
+SQLAlchemy = "1.4.32"
+PyYAML = "6.0"
+aiogram = "2.19"
+Werkzeug = "2.0.3"
+robobrowser = "0.5.3"
+SQLAlchemy-Utils = "0.38.2"
 [tool.poetry.dev-dependencies]
 
 [build-system]
