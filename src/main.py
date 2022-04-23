@@ -63,6 +63,8 @@ from robobrowser import RoboBrowser
 import dbmanager, messenger, dta
 import onboarding
 
+from selenium import webdriver
+
 dp = Dispatcher(messenger.bot)
 
 
@@ -214,7 +216,7 @@ async def open_task(user, taskid, mid=0, callid=0):
     answer += await emoji_builder(task['status']) + task['status_name'] + "\n"
     if task["error_message"] is not None:
         answer += str(task["error_message"]) + "\n"
-    answer += await parse_task(href)
+    photo = await parse_task(href)
 
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
     keyboard = types.InlineKeyboardMarkup()
@@ -223,7 +225,7 @@ async def open_task(user, taskid, mid=0, callid=0):
         types.InlineKeyboardButton(text="<--", callback_data="dashboard")
     )
     if mid == 0 or (task['status'] != 1 and task['status'] != 0):
-        mid = await messenger.edit_or_send(user.tid, answer, keyboard, mid)
+        mid = await messenger.edit_or_send_photo(user.tid, answer, photo, keyboard, mid)
 
     if (task['status'] == 3 or task['status'] == 4):
         await dbmanager.applylasttask(user, taskid)
@@ -235,9 +237,19 @@ async def open_task(user, taskid, mid=0, callid=0):
 
 
 async def parse_task(url):
-    # TODO: Use RoboBrowser, parse information and paste it here
-    # if domain = sovietov.com ==> parse; else:
-    return "Условие: " + url + "\n\n"
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.headless = True
+    chrome_options.add_argument('window-size=800,1000')
+    chrome_options.add_argument('ignore-certificate-errors')
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.get(url)
+    element = driver.find_element(value="вариант-16")
+    nextelement = driver.find_element(value="вариант-17")
+    height = nextelement.location['y'] - element.location['y']
+    driver.set_window_size(800, height)
+    #element.screenshot("screenshot.png")
+    photo = driver.get_screenshot_as_png()
+    return photo
 
 
 async def emoji_builder(statuscode):

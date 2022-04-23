@@ -29,5 +29,18 @@ async def edit_or_send(tid, text, keyboard=None, mid=0):
         return (await bot.send_message(chat_id=tid, reply_markup=keyboard, text=text)).message_id
 
 
+async def edit_or_send_photo(tid, text, photo, keyboard=None, mid=0):
+    if mid != 0:
+        try:
+            await bot.edit_message_photo(chat_id=tid, message_id=mid, photo=photo, reply_markup=keyboard, caption=text)
+            return mid
+        except MessageNotModified:
+            pass
+        except:
+            return (await bot.send_photo(chat_id=tid, photo=photo, reply_markup=keyboard, caption=text)).message_id
+    else:
+        return (await bot.send_message(chat_id=tid, photo=photo, reply_markup=keyboard, caption=text)).message_id
+
+
 async def popup_error(callid, text):
     await bot.answer_callback_query(callid, text)
