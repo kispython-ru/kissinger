@@ -5,6 +5,7 @@ import os
 
 import yaml
 from aiogram import Bot
+from aiogram import types
 
 # Init telegram bot api
 # TODO: Config initialization must be centralised. And config path put to .env
@@ -40,6 +41,10 @@ async def edit_or_send_photo(tid, text, photo, keyboard=None, mid=0):
             return (await bot.send_photo(chat_id=tid, photo=photo, reply_markup=keyboard, caption=text)).message_id
     else:
         return (await bot.send_message(chat_id=tid, photo=photo, reply_markup=keyboard, caption=text)).message_id
+
+
+async def answer_query(callid, text):
+    await bot.answer_web_app_query(callid, types.InlineQueryResultArticle(id=callid, title=text, input_message_content=types.InputTextMessageContent(message_text=text)))
 
 
 async def popup_error(callid, text):

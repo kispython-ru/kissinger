@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+    <head>
+        <script src="https://telegram.org/js/telegram-web-app.js"> </script>
+         <script>
+            function setThemeClass() {
+                document.documentElement.className = Telegram.WebApp.colorScheme;
+            }
+            Telegram.WebApp.onEvent('themeChanged', setThemeClass);
+            setThemeClass();
+         </script>
+        <meta charset="utf-8">
+         <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism-twilight.min.css" rel="stylesheet" />
+         <style>
+             .editor {
+    border-radius: 6px;
+                 border-color: #ccc;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14px;
+    font-weight: 400;
+    height: 340px;
+    letter-spacing: normal;
+    line-height: 20px;
+    padding: 10px;
+    tab-size: 4;
+}
+         </style>
+            <style>
+      body {
+        font-family: sans-serif;
+        background-color: var(--tg-theme-bg-color, #ffffff);
+        color: var(--tg-theme-text-color, #222222);
+        font-size: 16px;
+        margin: 0;
+        padding: 0;
+        color-scheme: var(--tg-color-scheme);
+      }
+      a {
+        color: var(--tg-theme-link-color, #2678b6);
+      }
+      button {
+        display: block;
+        width: 100%;
+        font-size: 14px;
+        margin: 15px 0;
+        padding: 12px 20px;
+        border:  none;
+        border-radius: 4px;
+        background-color: var(--tg-theme-button-color, #50a8eb);
+        color: var(--tg-theme-button-text-color, #ffffff);
+        cursor: pointer;
+      }
+      </style>
+    </head>
+    <body>
+    {% set number = tid | int %}
+        <h1>Задание {{ number + 1 | int }}</h1>
+
+<div class="editor language-python">print("Hello, world!")</div>
+
+<script type="module" id="code">
+  import {CodeJar} from "https://medv.io/codejar/codejar.js?"
+
+  const jar = new CodeJar(
+    document.querySelector(".editor"),
+    Prism.highlightElement
+  )
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+
+            Telegram.WebApp.MainButton.setText('🚀 Отправить').show().onClick(function () { sendPayload(); });
+
+            function sendPayload() {
+                Telegram.WebApp.MainButton.setText('INIT JSON').show();
+                    var data = {
+                        query_id: Telegram.WebApp.initDataUnsafe.query_id,
+                        code: jar.toString(),
+                        userid: Telegram.WebApp.initDataUnsafe.user.id,
+                    };
+                    Telegram.WebApp.MainButton.setText('STRINGIFY JSON').show();
+                    var json = JSON.stringify(data);
+                    Telegram.WebApp.MainButton.setText('OPEN REQUEST').show();
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "/group/{{ gid }}/var/{{ vid }}/task/{{ tid }}");
+
+                    var issuccess = true;
+                    xhr.onerror= function(e) {
+                        issuccess = false;
+                        Telegram.WebApp.MainButton.setText('⛔️ ERROR').show();
+                    };
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.send(json);
+                    Telegram.WebApp.MainButton.setText('PROCESSING...').show();
+                    if (issuccess) {
+                        Telegram.WebApp.MainButton.setText('✅ Готово').show();
+                        webviewClose();
+                    }
+
+            }
+
+            function webviewClose() {
+                    Telegram.WebApp.close();
+                }
+        </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    </body>
+</html>

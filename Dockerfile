@@ -25,5 +25,6 @@ RUN poetry config virtualenvs.create false \
 # Creating folders, and files for a project:
 COPY . /code
 
+ENV CONFIG_PATH=src/config.yml
 
-RUN make run
+CMD python src/main.py

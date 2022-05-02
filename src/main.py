@@ -2,6 +2,7 @@
 # Initialization and checkup
 #
 import asyncio
+from multiprocessing import Process
 
 print('''
  ______ ______              _____
@@ -49,7 +50,8 @@ if config["URL"] is None:
     exit(1)
 
 if config["DTATOKEN"] is None:
-    print("[WARN] DTA token not found. You can't use DTA legacy functions without it")
+    print("[WARN] DTA token not found. You can't use DTA legacy functions without it. Token will be required in "
+          "future versions.")
 
 from aiogram import Dispatcher, executor, types
 
@@ -65,13 +67,14 @@ import onboarding
 
 from selenium import webdriver
 
-dp = Dispatcher(messenger.bot)
+from flask import render_template
 
+dp = Dispatcher(messenger.bot)
 
 @dp.message_handler(commands=['about'], commands_prefix='!/')
 async def about(message: types.Message):
     await messenger.edit_or_send(message.from_user.id,
-                                 "🤵‍♂️ Kissinger v2.0\n\nGithub: github.com/aaplnv/kissinger\n\nСделал @aaplnv")
+                                 "🤵‍♂️ Kissinger v2.0\n\nGithub: github.com/kispython-ru/kissinger\n\nСделал @aaplnv")
 
 
 @dp.message_handler((filters.RegexpCommandsFilter(regexp_commands=['task_([0-9]*)'])))
@@ -111,6 +114,10 @@ async def send_welcome(message: types.Message):
 async def accept_task(message: types.Message):
     # Get user info from db
     user = await dbmanager.getuser(message.from_user.id)
+
+    if (message.web_app_data is not None):
+        await messenger.edit_or_send(message.from_user.id, message.web_app_data)
+        return
 
     # TODO: Official send_task support
     try:
@@ -200,8 +207,7 @@ async def dashboard(user, mid=0):
         emoji = await emoji_builder(task['status'])
         answer = emoji + f"Задание {(task['id'] + 1)}: {task['status_name']}"
         keyboard.add(
-            types.InlineKeyboardButton(text=answer, web_app=types.WebAppInfo(url="http://localhost:8080")),
-        )
+            types.InlineKeyboardButton(text=answer, web_app=types.WebAppInfo(url="https://beta.kissinger.ru/group/{}/var/{}/task/{}".format(user.gid, user.vid, task['id']))))
     await messenger.edit_or_send(user.tid, "👨‍🏫 Ваши успехи в обучении:", keyboard, mid)
 
 
@@ -216,7 +222,7 @@ async def open_task(user, taskid, mid=0, callid=0):
     answer += await emoji_builder(task['status']) + task['status_name'] + "\n"
     if task["error_message"] is not None:
         answer += str(task["error_message"]) + "\n"
-    photo = await parse_task(href)
+    #photo = await parse_task(href)
 
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
     keyboard = types.InlineKeyboardMarkup()
@@ -225,7 +231,7 @@ async def open_task(user, taskid, mid=0, callid=0):
         types.InlineKeyboardButton(text="<--", callback_data="dashboard")
     )
     if mid == 0 or (task['status'] != 1 and task['status'] != 0):
-        mid = await messenger.edit_or_send_photo(user.tid, answer, photo, keyboard, mid)
+        mid = await messenger.edit_or_send(user.tid, answer, keyboard, mid)
 
     if (task['status'] == 3 or task['status'] == 4):
         await dbmanager.applylasttask(user, taskid)
@@ -247,7 +253,7 @@ async def parse_task(url):
     nextelement = driver.find_element(value="вариант-17")
     height = nextelement.location['y'] - element.location['y']
     driver.set_window_size(800, height)
-    #element.screenshot("screenshot.png")
+    # element.screenshot("screenshot.png")
     photo = driver.get_screenshot_as_png()
     return photo
 
@@ -257,6 +263,41 @@ async def emoji_builder(statuscode):
     return emojis[statuscode]
 
 
-if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+def startserver():
+    from flask import Flask
+    from flask import request
+
+    app = Flask(__name__)
+
+    @app.route('/group/<gid>/var/<vid>/task/<tid>', methods=['GET'])
+    async def hello(tid: int, vid: int, gid: int):
+        return render_template('task.html', tid=tid, vid=vid, gid=gid)
+
+    @app.route('/group/<gid>/var/<vid>/task/<tid>', methods=['POST'])
+    async def accept(tid: int, vid: int, gid: int):
+        jsn = request.get_json()
+        user = await dbmanager.getuser(jsn['userid'])
+        await send_task(gid, vid, tid, jsn['code'], "")
+        number = int(tid) + 1
+        await messenger.answer_query(jsn['query_id'], ("🚀 Вы отправили ответ на задание " + str(number)))
+        await open_task(user, tid)
+        return "OK"
+
+    app.run(host="0.0.0.0")
+
+
+def main():
+    flaskprocess = Process(target=startserver)
+    try:
+        flaskprocess.start()
+    except BaseException:
+        print(f"Error occured while starting process {flaskprocess}")
+
+    asyncio.run(executor.start_polling(dp, skip_updates=True))
+    asyncio.run(startserver())
     print("[ OK ] Bot started")
+
+
+if __name__ == '__main__':
+    main()
+
