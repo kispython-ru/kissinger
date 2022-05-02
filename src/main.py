@@ -71,7 +71,7 @@ dp = Dispatcher(messenger.bot)
 @dp.message_handler(commands=['about'], commands_prefix='!/')
 async def about(message: types.Message):
     await messenger.edit_or_send(message.from_user.id,
-                                 "🤵‍♂️ Kissinger v1.2\n\nGithub: github.com/aaplnv/kissinger\n\nСделал @aaplnv")
+                                 "🤵‍♂️ Kissinger v2.0\n\nGithub: github.com/aaplnv/kissinger\n\nСделал @aaplnv")
 
 
 @dp.message_handler((filters.RegexpCommandsFilter(regexp_commands=['task_([0-9]*)'])))
@@ -133,7 +133,7 @@ async def send_task(gid, vid, taskid, solution, entities):
 # Bypass official api if you have any problems
 async def send_task_bypass(gid, vid, taskid, solution, entities):
     # Create headless browser
-    browser = RoboBrowser(user_agent='Kissinger/1.0')
+    browser = RoboBrowser(user_agent='Kissinger/2.0')
 
     # Open DTA and insert code to form
     browser.open(f"http://kispython.ru/group/{gid}/variant/{vid}/task/{taskid}")
