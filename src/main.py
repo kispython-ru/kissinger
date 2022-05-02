@@ -200,7 +200,7 @@ async def dashboard(user, mid=0):
         emoji = await emoji_builder(task['status'])
         answer = emoji + f"Задание {(task['id'] + 1)}: {task['status_name']}"
         keyboard.add(
-            types.InlineKeyboardButton(text=answer, callback_data=f"task_{str(task['id'])}")
+            types.InlineKeyboardButton(text=answer, web_app=types.WebAppInfo(url="http://localhost:8080")),
         )
     await messenger.edit_or_send(user.tid, "👨‍🏫 Ваши успехи в обучении:", keyboard, mid)
 
