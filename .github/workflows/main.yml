@@ -25,7 +25,7 @@ jobs:
             run: |
               line='kissinger.ru:22 SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.4 kissinger.ru ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDie6UiRBD2smVgcfLaou6XCh/evf2jEBTX0WAnf8/PYw+ad7mjJbGfoo3giDISZh99TAXAtF4Z6BFhClRmOeDGULxUwxwKbki4wlWU3dB4cgOqVv+jgrCLBBvSKRTJo1mDOje2nk/jdfqiQnM21YazfezdQ+qs6nCVhTjTZfXzsAvPGbuVMn3vLMVwK1CAV9kXmuRngdkXbdVZ9LpBXEpp9qV0S8ZMWZY6m/3eP8XKvvif5G4XhMdLBzdQsUfVp22Nv5q9TV5Nst4DkJliyKOo4/LGyss/tAyV6EZme2CJWQPD/GOATd9brArdKseoYnWwWdr9EkqU24yUgI+pIdfR'
               ssh-keyscan -H kissinger.ru >> ~/.ssh/known_hosts
-          - name: Execute ssh 
+            
           - run: |
                 ssh -tt whiterose@kissinger.ru
                 touch leavemehere.txt 
