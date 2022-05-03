@@ -22,7 +22,5 @@ jobs:
               privateKey: ${{ secrets.SSH_PRIVATE_KEY }}
               debug: false
               command: |
-                  ls
-                  touch leavemehere.txt
-                  echo "Join fsociety" >> leavemehere.txt
+                cd ./updateKissinger.sh
                 
