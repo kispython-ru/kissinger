@@ -23,6 +23,6 @@ jobs:
                 ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
                 
           - run: |
-                ssh whiterose@kissinger.ru
+                ssh -tt whiterose@kissinger.ru
                 touch leavemehere.txt 
                 
