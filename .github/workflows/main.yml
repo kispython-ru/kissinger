@@ -15,14 +15,14 @@ jobs:
     my_job:
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v2
-          # Make sure the @v0.5.4 matches the current version of the
-          # action 
-          - uses: webfactory/ssh-agent@v0.5.4
+          - name: Execute SSH commmands on remote server
+            uses: JimCronqvist/action-ssh@master
             with:
-                ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          - run: |
-                ls
-                touch leavemehere.txt
-                echo "Join fsociety" >> leavemehere.txt
+              hosts: 'user@domain.com user@domain2.com:2222'
+              privateKey: ${{ secrets.SSH_PRIVATE_KEY }}
+              debug: false
+              command: |
+                  ls
+                  touch leavemehere.txt
+                  echo "Join fsociety" >> leavemehere.txt
                 
