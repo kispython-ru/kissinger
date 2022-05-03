@@ -22,5 +22,5 @@ jobs:
               privateKey: ${{ secrets.SSH_PRIVATE_KEY }}
               debug: false
               command: |
-                cd ./updateKissinger.sh
+                ./updateKissinger.sh
                 
