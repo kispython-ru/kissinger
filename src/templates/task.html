@@ -2,6 +2,7 @@
 <html>
     <head>
         <script src="https://telegram.org/js/telegram-web-app.js"> </script>
+        <script src="https://cdn.tailwindcss.com"></script>
          <script>
             function setThemeClass() {
                 document.documentElement.className = Telegram.WebApp.colorScheme;
@@ -24,13 +25,13 @@
                  line-height: 20px;
                  padding: 10px;
                  tab-size: 4;
+                 margin: 5px;
              }
 
              body {
-                 font-family: sans-serif;
+                 font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
                  background-color: var(--tg-theme-bg-color, #ffffff);
                  color: var(--tg-theme-text-color, #222222);
-                 font-size: 16px;
                  margin: 0;
                  padding: 0;
                  color-scheme: var(--tg-color-scheme);
@@ -39,25 +40,20 @@
              a {
                  color: var(--tg-theme-link-color, #2678b6);
              }
-
-             button {
-                display: block;
-                width: 100%;
-                font-size: 14px;
-                margin: 15px 0;
-                padding: 12px 20px;
-                border:  none;
-                border-radius: 4px;
-                background-color: var(--tg-theme-button-color, #50a8eb);
-                color: var(--tg-theme-button-text-color, #ffffff);
-                cursor: pointer;
-             }
       </style>
     </head>
     <body>
-        {% set number = tid | int %}
-        <h1>Задание {{ number + 1 | int }} {{ emojistatus }}</h1>
-        <a href="{{ source }}">Условие задачи</a>
+        <div class="block font-sans">
+             {% set number = tid | int %}
+            <h1 class="block text-xl font-bold text-slate-900 p-2">Задание {{ number + 1 | int }} {{ emojistatus }}</h1>
+
+            <details class="block text-lg bg-gray-200 p-1 w-auto mx-2 rounded">
+                <summary class="font-semibold">Условие</summary>
+                    <a href="{{ source }}">Нажми на меня _/(o_o)\_</a>
+            </details>
+        </div>
+
+
 
         <div class="editor language-python">print("Hello, world!")</div>
 
