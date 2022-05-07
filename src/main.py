@@ -271,7 +271,9 @@ def startserver():
 
     @app.route('/group/<gid>/var/<vid>/task/<tid>', methods=['GET'])
     async def hello(tid: int, vid: int, gid: int):
-        return render_template('task.html', tid=tid, vid=vid, gid=gid)
+        task = await dta.get_task(gid, vid, tid)
+
+        return render_template('task.html', tid=tid, vid=vid, gid=gid, source=task['source'])
 
     @app.route('/group/<gid>/var/<vid>/task/<tid>', methods=['POST'])
     async def accept(tid: int, vid: int, gid: int):

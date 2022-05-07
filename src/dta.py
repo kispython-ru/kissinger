@@ -17,6 +17,11 @@ async def get_task(user, taskid):
     return r.json()
 
 
+async def get_task(gid, vid, taskid):
+    r = await make_get_request(f"{config['URL']}group/{gid}/variant/{vid}/task/{taskid}")
+    return r.json()
+
+
 async def send_task(gid, vid, taskid, solution):
     if config['DTATOKEN'] is None:
         raise Exception("DTA token is not set")
