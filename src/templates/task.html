@@ -13,23 +13,7 @@
          <meta charset="utf-8">
          <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism-twilight.min.css" rel="stylesheet" />
          <style>
-             .editor {
-                 border-radius: 6px;
-                 border-color: #ccc;
-                 box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-                 font-family: 'Source Code Pro', monospace;
-                 font-size: 14px;
-                 font-weight: 400;
-                 height: 340px;
-                 letter-spacing: normal;
-                 line-height: 20px;
-                 padding: 10px;
-                 tab-size: 4;
-                 margin: 5px;
-             }
-
              body {
-                 font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
                  background-color: var(--tg-theme-bg-color, #ffffff);
                  color: var(--tg-theme-text-color, #222222);
                  margin: 0;
@@ -37,25 +21,31 @@
                  color-scheme: var(--tg-color-scheme);
             }
 
+             h1 {
+                 font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+             }
+
              a {
                  color: var(--tg-theme-link-color, #2678b6);
              }
-      </style>
+         </style>
     </head>
-    <body>
-        <div class="block font-sans">
+    <body class="bg-slate-100">
+        <div class="block font-sans ">
              {% set number = tid | int %}
-            <h1 class="block text-xl font-bold text-slate-900 p-2">Задание {{ number + 1 | int }} {{ emojistatus }}</h1>
+            <h1 class="block text-3xl font-bold text-slate-900 p-2">Задание {{ number + 1 | int }} {{ emojistatus }}</h1>
 
-            <details class="block text-lg bg-gray-200 p-1 w-auto mx-2 rounded">
+            <details class="block text-lg bg-white p-1 w-auto mx-2 rounded shadow-lg">
                 <summary class="font-semibold">Условие</summary>
                     <a href="{{ source }}">Нажми на меня _/(o_o)\_</a>
             </details>
+
+            <div class="m-2">
+                <h3>Ваше решение:</h3>
+                <div class="editor language-python bg-slate-900 text-white border border-black h-60">print("Hello, world!")</div>
+            </div>
+
         </div>
-
-
-
-        <div class="editor language-python">print("Hello, world!")</div>
 
         <script type="module" id="code">
             import {CodeJar} from "https://medv.io/codejar/codejar.js?"
@@ -65,19 +55,16 @@
             )
 
             Telegram.WebApp.ready();
-            Telegram.WebApp.expand();
             Telegram.WebApp.MainButton.setText('🚀 Отправить').show().onClick(function () { sendPayload(); });
 
             function sendPayload() {
-                Telegram.WebApp.MainButton.setText('INIT JSON').show();
+                Telegram.WebApp.MainButton.setText('🏃‍♀️ Работаем...').show().onClick(function () {});
                 var data = {
                     query_id: Telegram.WebApp.initDataUnsafe.query_id,
                     code: jar.toString(),
                     userid: Telegram.WebApp.initDataUnsafe.user.id,
                 };
-                Telegram.WebApp.MainButton.setText('STRINGIFY JSON').show();
                 var json = JSON.stringify(data);
-                Telegram.WebApp.MainButton.setText('OPEN REQUEST').show();
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", "/group/{{ gid }}/var/{{ vid }}/task/{{ tid }}");
 
@@ -88,7 +75,6 @@
                 };
                 xhr.setRequestHeader("Content-Type", "application/json");
                 xhr.send(json);
-                Telegram.WebApp.MainButton.setText('PROCESSING...').show();
                 if (issuccess) {
                     Telegram.WebApp.MainButton.setText('✅ Готово').show();
                     webviewClose();
