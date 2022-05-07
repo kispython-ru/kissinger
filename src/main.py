@@ -273,7 +273,7 @@ def startserver():
     async def hello(tid: int, vid: int, gid: int):
         task = await dta.get_task(gid, vid, tid)
 
-        return render_template('task.html', tid=tid, vid=vid, gid=gid, source=task['source'])
+        return render_template('task.html', tid=tid, vid=vid, gid=gid, source=task['source'], emojistatus=await emoji_builder(task['status']))
 
     @app.route('/group/<gid>/var/<vid>/task/<tid>', methods=['POST'])
     async def accept(tid: int, vid: int, gid: int):
