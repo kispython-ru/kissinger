@@ -264,17 +264,17 @@ async def emoji_builder(statuscode):
     return emojis[statuscode]
 
 
-async def cut_task(link):
+async def cut_task(link, vid):
     rslt = ""
     session = AsyncHTMLSession()
     r = await session.get(link)
     recording = False
     for line in r.html.find():
-        if line.find('#вариант-16'):
+        if line.find(f'#вариант-{str(int(vid) + 1)}'):
             recording = True
             print("Recording started")
 
-        if line.find('#вариант-17'):
+        if line.find(f'#вариант-{str(int(vid)+2)}'):
             recording = False
             print("Recording ended")
 
@@ -294,7 +294,7 @@ def startserver():
     @app.route('/group/<gid>/var/<vid>/task/<tid>', methods=['GET'])
     async def hello(tid: int, vid: int, gid: int):
         task = await dta.get_task(gid, vid, tid)
-        return render_template('task.html', tid=tid, vid=vid, gid=gid, source=await cut_task(task['source']), emojistatus=await emoji_builder(task['status']))
+        return render_template('task.html', tid=tid, vid=vid, gid=gid, source=await cut_task(task['source'], vid), emojistatus=await emoji_builder(task['status']))
 
     @app.route('/group/<gid>/var/<vid>/task/<tid>', methods=['POST'])
     async def accept(tid: int, vid: int, gid: int):
@@ -307,7 +307,7 @@ def startserver():
         await open_task(user, tid)
         return "OK"
 
-    app.run()#host="0.0.0.0")
+    app.run(host="0.0.0.0")
 
 
 def main():
