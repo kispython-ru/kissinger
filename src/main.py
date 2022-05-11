@@ -2,7 +2,7 @@
 # Initialization and checkup
 #
 import asyncio
-from requests_html import HTMLSession
+from requests_html import AsyncHTMLSession
 from multiprocessing import Process
 
 print('''
@@ -265,7 +265,7 @@ async def emoji_builder(statuscode):
 
 
 async def cut_task(link):
-    session = HTMLSession()
+    session = AsyncHTMLSession()
     r = session.get(link)
 
     return r.html.render()
