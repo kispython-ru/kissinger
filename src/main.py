@@ -268,7 +268,7 @@ async def cut_task(link):
     session = AsyncHTMLSession()
     r = session.get(link)
 
-    return r.html.render()
+    return r.html.text
 
 
 def startserver():
