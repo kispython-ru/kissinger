@@ -265,10 +265,24 @@ async def emoji_builder(statuscode):
 
 
 async def cut_task(link):
+    rslt = ""
     session = AsyncHTMLSession()
     r = await session.get(link)
+    recording = False
+    for line in r.html.find():
+        if line.find('#вариант-16'):
+            recording = True
+            print("Recording started")
 
-    return r.html.text
+        if line.find('#вариант-17'):
+            recording = False
+            print("Recording ended")
+
+        if recording:
+            rslt += line.html
+
+    print(rslt)
+    return rslt
 
 
 def startserver():
@@ -293,7 +307,7 @@ def startserver():
         await open_task(user, tid)
         return "OK"
 
-    app.run(host="0.0.0.0")
+    app.run()#host="0.0.0.0")
 
 
 def main():
