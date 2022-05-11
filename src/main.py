@@ -266,7 +266,7 @@ async def emoji_builder(statuscode):
 
 async def cut_task(link):
     session = AsyncHTMLSession()
-    r = session.get(link)
+    r = await session.get(link)
 
     return r.html.text
 
