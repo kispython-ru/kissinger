@@ -36,9 +36,11 @@
              {% set number = tid | int %}
             <h1 class="block text-3xl font-bold text-slate-900 p-2">Задание {{ number + 1 | int }} {{ emojistatus }}</h1>
 
-            <details class="block text-lg bg-white p-1 w-auto mx-2 rounded shadow-lg">
+            <details class="block text-lg bg-white p-1 w-auto mx-2 rounded border">
                 <summary class="font-semibold">Условие</summary>
+                <div class="block text-sm">
                     {{ source|safe }}
+                </div>
             </details>
 
             <div class="m-2">

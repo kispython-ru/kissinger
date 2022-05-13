@@ -270,9 +270,12 @@ async def cut_task(link, vid):
     r = await session.get(link)
     recording = False
     for line in r.html.find():
+        #print(line)
         if line.find(f'#вариант-{str(int(vid) + 1)}'):
             recording = True
             print("Recording started")
+
+        #if line.find("Задача №"):
 
         if line.find(f'#вариант-{str(int(vid)+2)}'):
             recording = False
@@ -281,7 +284,6 @@ async def cut_task(link, vid):
         if recording:
             rslt += line.html
 
-    print(rslt)
     return rslt
 
 
