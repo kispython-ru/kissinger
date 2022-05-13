@@ -270,12 +270,9 @@ async def cut_task(link, vid):
     r = await session.get(link)
     recording = False
     for line in r.html.find():
-        #print(line)
         if line.find(f'#вариант-{str(int(vid) + 1)}'):
             recording = True
             print("Recording started")
-
-        #if line.find("Задача №"):
 
         if line.find(f'#вариант-{str(int(vid)+2)}'):
             recording = False
@@ -300,13 +297,12 @@ def startserver():
 
     @app.route('/group/<gid>/var/<vid>/task/<tid>', methods=['POST'])
     async def accept(tid: int, vid: int, gid: int):
-
         jsn = request.get_json()
         user = await dbmanager.getuser(jsn['userid'])
         await send_task(gid, vid, tid, jsn['code'], "")
         number = int(tid) + 1
         await messenger.answer_query(jsn['query_id'], ("🚀 Вы отправили ответ на задание " + str(number)))
-        await open_task(user, tid)
+        await open_task(user, taskid=tid, mid=0, callid=0)
         return "OK"
 
     app.run(host="0.0.0.0")
