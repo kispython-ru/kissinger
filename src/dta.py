@@ -26,6 +26,7 @@ async def send_task(gid, vid, taskid, solution):
     if config['DTATOKEN'] is None:
         raise Exception("DTA token is not set")
     r = await make_post_request(f"{config['URL']}group/{gid}/variant/{vid}/task/{taskid}", solution=solution)
+    print(r)
     return r.json()
 
 
@@ -53,5 +54,3 @@ async def make_post_request(url, solution):
             return result
         #except:
          #
-        await asyncio.sleep(2)
-    #raise Exception("Can't access DTA")

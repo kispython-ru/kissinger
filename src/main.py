@@ -111,25 +111,6 @@ async def send_welcome(message: types.Message):
     await dashboard(user)
 
 
-@dp.message_handler()
-async def accept_task(message: types.Message):
-    # Get user info from db
-    user = await dbmanager.getuser(message.from_user.id)
-
-    # TODO: Official send_task support
-    try:
-        print("Trying to send task")
-        await send_task(user.gid, user.vid, user.last_task, message.text, message.entities)
-        print("Task sent")
-    except Exception as e:
-        print("Error sending task")
-        print(e)
-        # await send_task_bypass(user.gid, user.vid, user.last_task, message.text, message.entities)
-
-    # Redirect to task viewer
-    await open_task(user, user.last_task)
-
-
 async def send_task(gid, vid, taskid, solution, entities):
     await dta.send_task(gid, vid, taskid, await undo_telegram_solution_modifications(solution, entities))
 
@@ -298,7 +279,7 @@ def startserver():
         await send_task(gid, vid, tid, jsn['code'], "")
         number = int(tid) + 1
         await messenger.answer_query(jsn['query_id'], ("🚀 Вы отправили ответ на задание " + str(number)))
-        await open_task(user, taskid=tid, mid=0, callid=0)
+        await open_task(user, taskid=tid)
         return "OK"
 
     app.run(host="0.0.0.0")
