@@ -295,7 +295,7 @@ def startserver():
     async def accept(tid: int, vid: int, gid: int):
         jsn = request.get_json()
         user = await dbmanager.getuser(jsn['userid'])
-        await send_task(gid, vid, tid, jsn['code'], None)
+        await send_task(gid, vid, tid, jsn['code'], "")
         number = int(tid) + 1
         await messenger.answer_query(jsn['query_id'], ("🚀 Вы отправили ответ на задание " + str(number)))
         await open_task(user, taskid=tid, mid=0, callid=0)
