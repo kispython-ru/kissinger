@@ -277,7 +277,7 @@ def startserver():
         await send_task(gid, vid, tid, jsn['code'], "")
         number = int(tid) + 1
         await messenger.answer_query(jsn['query_id'], ("🚀 Вы отправили ответ на задание " + str(number)))
-        await open_task(user, taskid=str(tid))
+        await open_task(user, str(tid))
         return "OK"
 
     app.run(host="0.0.0.0")
