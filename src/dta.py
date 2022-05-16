@@ -46,12 +46,12 @@ async def make_get_request(url):
 
 async def make_post_request(url, solution):
     for i in range(0, 2):
-        try:
-            result = requests.post(url, json={"code": solution},
+        #try:
+        result = requests.post(url, json={"code": solution},
                                     headers={"Content-Type": "application/json", "token": config['DTATOKEN']})
-            if result.status_code == 200:
-                return result
-        except:
-            pass
+        if result.status_code == 200:
+            return result
+        #except:
+         #
         await asyncio.sleep(2)
-    raise Exception("Can't access DTA")
+    #raise Exception("Can't access DTA")

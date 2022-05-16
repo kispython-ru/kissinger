@@ -124,7 +124,7 @@ async def accept_task(message: types.Message):
     except Exception as e:
         print("Error sending task")
         print(e)
-        await send_task_bypass(user.gid, user.vid, user.last_task, message.text, message.entities)
+        # await send_task_bypass(user.gid, user.vid, user.last_task, message.text, message.entities)
 
     # Redirect to task viewer
     await open_task(user, user.last_task)
