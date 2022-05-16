@@ -195,8 +195,6 @@ async def open_task(user, taskid, mid=0, callid=0):
 
     task = await dta.get_task(user, taskid)
 
-    href = task['source']
-
     answer += await emoji_builder(task['status']) + task['status_name'] + "\n"
     if task["error_message"] is not None:
         answer += str(task["error_message"]) + "\n"
@@ -279,7 +277,7 @@ def startserver():
         await send_task(gid, vid, tid, jsn['code'], "")
         number = int(tid) + 1
         await messenger.answer_query(jsn['query_id'], ("🚀 Вы отправили ответ на задание " + str(number)))
-        await open_task(user, taskid=tid)
+        await open_task(user, taskid=str(tid))
         return "OK"
 
     app.run(host="0.0.0.0")
