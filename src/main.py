@@ -116,10 +116,6 @@ async def accept_task(message: types.Message):
     # Get user info from db
     user = await dbmanager.getuser(message.from_user.id)
 
-    if (message.web_app_data is not None):
-        await messenger.edit_or_send(message.from_user.id, message.web_app_data)
-        return
-
     # TODO: Official send_task support
     try:
         print("Trying to send task")
@@ -299,7 +295,7 @@ def startserver():
     async def accept(tid: int, vid: int, gid: int):
         jsn = request.get_json()
         user = await dbmanager.getuser(jsn['userid'])
-        await send_task(gid, vid, tid, jsn['code'], "")
+        await send_task(gid, vid, tid, jsn['code'], None)
         number = int(tid) + 1
         await messenger.answer_query(jsn['query_id'], ("🚀 Вы отправили ответ на задание " + str(number)))
         await open_task(user, taskid=tid, mid=0, callid=0)
