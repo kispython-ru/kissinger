@@ -61,7 +61,6 @@ from aiogram.dispatcher import filters
 import werkzeug
 
 werkzeug.cached_property = werkzeug.utils.cached_property
-from robobrowser import RoboBrowser
 
 import dbmanager, messenger, dta
 import onboarding
@@ -157,6 +156,9 @@ async def dashboard(user, mid=0):
         emoji = await emoji_builder(task['status'])
         answer = emoji + f"Задание {(task['id'] + 1)}: {task['status_name']}"
         keyboard.add(
+        if task['status'] < 3:
+            types.InlineKeyboardButton(text=answer, callback_data=f"task_{task['id']}")
+        else:
             types.InlineKeyboardButton(text=answer, web_app=types.WebAppInfo(url="https://beta.kissinger.ru/group/{}/var/{}/task/{}".format(user.gid, user.vid, task['id']))))
     await messenger.edit_or_send(user.tid, "👨‍🏫 Ваши успехи в обучении:", keyboard, mid)
 
@@ -209,7 +211,6 @@ async def cut_task(link, vid):
 
         if recording:
             rslt += line.html
-
     return rslt
 
 
@@ -247,4 +248,3 @@ if __name__ == '__main__':
     asyncio.run(executor.start_polling(dp, skip_updates=True))
     asyncio.run(startserver())
     print("[ OK ] Bot started")
-
