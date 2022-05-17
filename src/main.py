@@ -70,6 +70,7 @@ from flask import render_template
 
 dp = Dispatcher(messenger.bot)
 
+
 @dp.message_handler(commands=['about'], commands_prefix='!/')
 async def about(message: types.Message):
     await messenger.edit_or_send(message.from_user.id,
@@ -236,7 +237,7 @@ def startserver():
     app.run(host="0.0.0.0")
 
 
-def main():
+if __name__ == '__main__':
     flaskprocess = Process(target=startserver)
     try:
         flaskprocess.start()
@@ -246,8 +247,4 @@ def main():
     asyncio.run(executor.start_polling(dp, skip_updates=True))
     asyncio.run(startserver())
     print("[ OK ] Bot started")
-
-
-if __name__ == '__main__':
-    main()
 
