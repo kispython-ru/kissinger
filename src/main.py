@@ -111,12 +111,12 @@ async def send_welcome(message: types.Message):
     await dashboard(user)
 
 
-async def send_task(gid, vid, taskid, solution, entities):
-    await dta.send_task(gid, vid, taskid, await undo_telegram_solution_modifications(solution, entities))
+async def send_task(gid, vid, taskid, solution):
+    await dta.send_task(gid, vid, taskid, solution)
 
 
 # Bypass official api if you have any problems
-async def send_task_bypass(gid, vid, taskid, solution, entities):
+async def send_task_bypass(gid, vid, taskid, solution):
     # Create headless browser
     browser = RoboBrowser(user_agent='Kissinger/2.0')
 
@@ -125,24 +125,9 @@ async def send_task_bypass(gid, vid, taskid, solution, entities):
     form = browser.get_form(
         action=f"/group/{gid}/variant/{vid}/task/{taskid}")
     form  # <RoboForm q=>
-    form['code'].value = await undo_telegram_solution_modifications(solution, entities)
+    form['code'].value = solution
     browser.submit_form(form)
     # TODO: check is request successful
-
-
-# Telegram can cut some important characters from your code. But we can fix it.
-async def undo_telegram_solution_modifications(solution, entities):
-    for entity in entities:
-        if entity.type == 'bold':
-            solution = solution[:entity.offset] + "** " + solution[entity.offset:(
-                    entity.offset + entity.length)] + " **" + solution[entity.offset + entity.length:]
-        if entity.type == 'italic':
-            solution = solution[:entity.offset] + "* " + solution[entity.offset:(
-                    entity.offset + entity.length)] + " *" + solution[entity.offset + entity.length:]
-
-    solution = solution.replace('“', '"', -1)
-    solution = solution.replace('”', '"', -1)
-    return solution + "\n"
 
 
 # Here I handle all callback requests. IDK how to make filter on aiogram level so...
@@ -218,22 +203,6 @@ async def open_task(user, taskid, mid=0, callid=0):
         await open_task(user, taskid, mid, callid)
 
 
-async def parse_task(url):
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.headless = True
-    chrome_options.add_argument('window-size=800,1000')
-    chrome_options.add_argument('ignore-certificate-errors')
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.get(url)
-    element = driver.find_element(value="вариант-16")
-    nextelement = driver.find_element(value="вариант-17")
-    height = nextelement.location['y'] - element.location['y']
-    driver.set_window_size(800, height)
-    # element.screenshot("screenshot.png")
-    photo = driver.get_screenshot_as_png()
-    return photo
-
-
 async def emoji_builder(statuscode):
     emojis = ['⏳ ', '🏃‍♂️💨 ', '✔️ ', '❌ ', '⚪️ ']
     return emojis[statuscode]
@@ -274,7 +243,7 @@ def startserver():
     async def accept(tid: int, vid: int, gid: int):
         jsn = request.get_json()
         user = await dbmanager.getuser(jsn['userid'])
-        await send_task(gid, vid, tid, jsn['code'], "")
+        await send_task(gid, vid, tid, jsn['code'])
         number = int(tid) + 1
         await messenger.answer_query(jsn['query_id'], ("🚀 Вы отправили ответ на задание " + str(number)))
         await open_task(user, str(tid))
