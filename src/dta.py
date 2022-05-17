@@ -3,17 +3,13 @@ import os
 
 import requests
 import yaml
+from robobrowser import RoboBrowser
 
 config = yaml.safe_load(open(os.environ.get("CONFIG_PATH")))
 
 
 async def get_alltasks(user):
     r = await make_get_request(f"{config['URL']}group/{user.gid}/variant/{user.vid}/task/list")
-    return r.json()
-
-
-async def get_task2(user, taskid):
-    r = await make_get_request(f"{config['URL']}group/{user.gid}/variant/{user.vid}/task/{taskid}")
     return r.json()
 
 
@@ -28,6 +24,20 @@ async def send_task(gid, vid, taskid, solution):
     r = await make_post_request(f"{config['URL']}group/{gid}/variant/{vid}/task/{taskid}", solution=solution)
     print(r)
     return r.json()
+
+
+async def send_task_bypass(gid, vid, taskid, solution):
+    # Create headless browser
+    browser = RoboBrowser(user_agent='Kissinger/2.0')
+
+    # Open DTA and insert code to form
+    browser.open(f"http://kispython.ru/group/{gid}/variant/{vid}/task/{taskid}")
+    form = browser.get_form(
+        action=f"/group/{gid}/variant/{vid}/task/{taskid}")
+    form  # <RoboForm q=>
+    form['code'].value = solution
+    browser.submit_form(form)
+    # TODO: check is request successful
 
 
 #

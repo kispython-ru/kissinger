@@ -66,8 +66,6 @@ from robobrowser import RoboBrowser
 import dbmanager, messenger, dta
 import onboarding
 
-from selenium import webdriver
-
 from flask import render_template
 
 dp = Dispatcher(messenger.bot)
@@ -112,22 +110,10 @@ async def send_welcome(message: types.Message):
 
 
 async def send_task(gid, vid, taskid, solution):
-    await dta.send_task(gid, vid, taskid, solution)
-
-
-# Bypass official api if you have any problems
-async def send_task_bypass(gid, vid, taskid, solution):
-    # Create headless browser
-    browser = RoboBrowser(user_agent='Kissinger/2.0')
-
-    # Open DTA and insert code to form
-    browser.open(f"http://kispython.ru/group/{gid}/variant/{vid}/task/{taskid}")
-    form = browser.get_form(
-        action=f"/group/{gid}/variant/{vid}/task/{taskid}")
-    form  # <RoboForm q=>
-    form['code'].value = solution
-    browser.submit_form(form)
-    # TODO: check is request successful
+    try:
+        await dta.send_task(gid, vid, taskid, solution)
+    except:
+        await dta.send_task_bypass(gid, vid, taskid, solution)
 
 
 # Here I handle all callback requests. IDK how to make filter on aiogram level so...
@@ -175,15 +161,13 @@ async def dashboard(user, mid=0):
 
 
 async def open_task(user, taskid, mid=0, callid=0):
-    # answer string
     answer = "Задание " + str(int(taskid) + 1) + "\n"
 
-    task = await dta.get_task2(user, str(taskid))
+    task = await dta.get_task(user.gid, user.vid, str(taskid))
 
     answer += await emoji_builder(task['status']) + task['status_name'] + "\n"
     if task["error_message"] is not None:
         answer += str(task["error_message"]) + "\n"
-    #photo = await parse_task(href)
 
     answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
     keyboard = types.InlineKeyboardMarkup()
