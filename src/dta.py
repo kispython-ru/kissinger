@@ -12,7 +12,7 @@ async def get_alltasks(user):
     return r.json()
 
 
-async def get_task(user, taskid):
+async def get_task2(user, taskid):
     r = await make_get_request(f"{config['URL']}group/{user.gid}/variant/{user.vid}/task/{taskid}")
     return r.json()
 

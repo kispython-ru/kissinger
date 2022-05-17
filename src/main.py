@@ -178,7 +178,7 @@ async def open_task(user, taskid, mid=0, callid=0):
     # answer string
     answer = "Задание " + str(int(taskid) + 1) + "\n"
 
-    task = await dta.get_task(user, str(taskid))
+    task = await dta.get_task2(user, str(taskid))
 
     answer += await emoji_builder(task['status']) + task['status_name'] + "\n"
     if task["error_message"] is not None:
