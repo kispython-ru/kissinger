@@ -87,10 +87,6 @@ async def send_help(message: types.Message, regexp_command):
 @dp.message_handler(commands=['help'], commands_prefix='!/')
 async def send_help(message: types.Message):
     await message.reply("🤷 Вопросы и ответы:\n\n"
-                        "Q: Как отправить ответ на задание?\n"
-                        "A: Откройте карточку задания, скопируйте код в лс боту и просто отправьте его,\n\n"
-                        "Q: Задание не принимается. Видимо, телеграмм отформатировал сообщение так, что kispython его не воспринимает. Что делать?\n"
-                        "A: Попробуйте заключить код в три апострафа (```) в начале и в конце. Так телеграмм не будет применять markdown на код\n\n"
                         "Q: Как связаться с разработчиками?"
                         "A: Откройте issue в нашем репозитории: https://github.com/aaplnv/Kissinger/issues")
 
@@ -155,11 +151,11 @@ async def dashboard(user, mid=0):
     for task in tasks:
         emoji = await emoji_builder(task['status'])
         answer = emoji + f"Задание {(task['id'] + 1)}: {task['status_name']}"
-        keyboard.add(
+
         if task['status'] < 3:
-            types.InlineKeyboardButton(text=answer, callback_data=f"task_{task['id']}")
+            keyboard.add(types.InlineKeyboardButton(text=answer, callback_data=f"task_{task['id']}"))
         else:
-            types.InlineKeyboardButton(text=answer, web_app=types.WebAppInfo(url="https://beta.kissinger.ru/group/{}/var/{}/task/{}".format(user.gid, user.vid, task['id']))))
+            keyboard.add(types.InlineKeyboardButton(text=answer, web_app=types.WebAppInfo(url="https://beta.kissinger.ru/group/{}/var/{}/task/{}".format(user.gid, user.vid, task['id']))))
     await messenger.edit_or_send(user.tid, "👨‍🏫 Ваши успехи в обучении:", keyboard, mid)
 
 
