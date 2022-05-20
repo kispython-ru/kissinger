@@ -105,6 +105,7 @@ async def send_welcome(message: types.Message):
     await dashboard(user)
 
 
+# TODO: Better error handling
 async def send_task(gid, vid, taskid, solution):
     try:
         await dta.send_task(gid, vid, taskid, solution)
@@ -112,7 +113,6 @@ async def send_task(gid, vid, taskid, solution):
         await dta.send_task_bypass(gid, vid, taskid, solution)
 
 
-# Here I handle all callback requests. IDK how to make filter on aiogram level so...
 # TODO: Better action name management
 @dp.callback_query_handler()
 async def callback_handler(callback: types.CallbackQuery):
@@ -145,6 +145,7 @@ async def callback_handler(callback: types.CallbackQuery):
     return
 
 
+# TODO: Reset button
 async def dashboard(user, mid=0):
     tasks = await dta.get_alltasks(user)
     keyboard = types.InlineKeyboardMarkup()
@@ -159,6 +160,7 @@ async def dashboard(user, mid=0):
     await messenger.edit_or_send(user.tid, "👨‍🏫 Ваши успехи в обучении:", keyboard, mid)
 
 
+# TODO: Refactor it
 async def open_task(user, taskid, mid=0, callid=0):
     answer = "Задание " + str(int(taskid) + 1) + "\n"
 
@@ -168,7 +170,6 @@ async def open_task(user, taskid, mid=0, callid=0):
     if task["error_message"] is not None:
         answer += str(task["error_message"]) + "\n"
 
-    answer += "Когда сделаете, скопируйте свой код и оправьте мне в виде сообщения сюда, я его проверю"
     keyboard = types.InlineKeyboardMarkup()
 
     keyboard.add(
@@ -191,6 +192,8 @@ async def emoji_builder(statuscode):
     return emojis[statuscode]
 
 
+# BUG: If variant id == 39 it will not work
+# TODO: It should iterate only tags inside <body>
 async def cut_task(link, vid):
     rslt = ""
     session = AsyncHTMLSession()
@@ -210,6 +213,7 @@ async def cut_task(link, vid):
     return rslt
 
 
+# TODO: Add error handling
 def startserver():
     from flask import Flask
     from flask import request
@@ -234,6 +238,7 @@ def startserver():
     app.run(host="0.0.0.0")
 
 
+# TODO: Make better async function
 if __name__ == '__main__':
     flaskprocess = Process(target=startserver)
     try:
