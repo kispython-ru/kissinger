@@ -15,11 +15,8 @@
          <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism-twilight.min.css" rel="stylesheet" />
          <style>
              body {
-                 background-color: var(--tg-theme-bg-color, #ffffff);
-                 color: var(--tg-theme-text-color, #222222);
                  margin: 0;
                  padding: 0;
-                 color-scheme: var(--tg-color-scheme);
             }
 
              h1 {
@@ -29,9 +26,18 @@
              a {
                  color: var(--tg-theme-link-color, #2678b6);
              }
+
+             .mainbagg {
+                 background-color: var(--tg-theme-bg-color, #000000);
+                 color-scheme: var(--tg-color-scheme);
+             }
+
+             .txtcol {
+                 color: var(--tg-theme-text-color, #222222);
+             }
          </style>
     </head>
-    <body class="bg-slate-100">
+    <body class="mainbagg txtcol">
         <div class="block font-sans ">
              {% set number = tid | int %}
             <h1 class="block text-3xl font-bold text-slate-900 p-2">Задание {{ number + 1 | int }} {{ emojistatus }}</h1>
