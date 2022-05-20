@@ -78,7 +78,6 @@ async def about(message: types.Message):
 
 @dp.message_handler((filters.RegexpCommandsFilter(regexp_commands=['task_([0-9]*)'])))
 async def send_help(message: types.Message, regexp_command):
-    # TODO: User registration must be centralized
     user = await dbmanager.getuser(message.from_user.id)
 
     await open_task(user, str(int(regexp_command.group(1)) - 1))

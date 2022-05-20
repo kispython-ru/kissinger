@@ -61,32 +61,49 @@
             Telegram.WebApp.MainButton.setText('🚀 Отправить').show().onClick(function () { sendPayload(); });
 
             function sendPayload() {
-                Telegram.WebApp.MainButton.setText('🏃‍♀️ Работаем...').show().onClick(function () {});
-                var data = {
-                    query_id: Telegram.WebApp.initDataUnsafe.query_id,
-                    code: jar.toString(),
-                    userid: Telegram.WebApp.initDataUnsafe.user.id,
-                };
-                var json = JSON.stringify(data);
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/group/{{ gid }}/var/{{ vid }}/task/{{ tid }}");
+                var success = true
+                try {
+                    Telegram.WebApp.MainButton.setText('🏃‍♀️ Работаем...').show().onClick(function () {
+                    });
+                    var data = {
+                        // TODO: Use safe data only
+                        query_id: Telegram.WebApp.initDataUnsafe.query_id,
+                        code: jar.toString(),
+                        userid: Telegram.WebApp.initDataUnsafe.user.id,
+                    };
+                    var json = JSON.stringify(data);
+                    var xhr = new XMLHttpRequest();
 
-                var issuccess = true;
-                xhr.onerror= function(e) {
-                    issuccess = false;
-                    Telegram.WebApp.MainButton.setText('⛔️ ERROR').show();
-                };
-                xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.send(json);
-                if (issuccess) {
-                    Telegram.WebApp.MainButton.setText('✅ Готово').show();
-                    webviewClose();
+                    xhr.open("POST", "/group/{{ gid }}/var/{{ vid }}/task/{{ tid }}");
+
+
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.send(json);
+
+                    xhr.onreadystatechange = function() {
+	                    if (this.readyState == 4 && this.status != 200) {
+	                        success = false
+                        }
+	                };
+                }
+                catch (exception) {
+                    success = false
+                    console.log(exception)
+                }
+                finally {
+                    if (success) {webviewClose()}
+                    else {errorThrow()}
                 }
             }
 
             function webviewClose() {
-                    Telegram.WebApp.close();
-                }
+                Telegram.WebApp.close();
+            }
+
+            function errorThrow() {
+                Telegram.WebApp.MainButton.setText('😰 Произошла ошибка').show();
+            }
+
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/components/prism-core.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/plugins/autoloader/prism-autoloader.min.js"></script>
